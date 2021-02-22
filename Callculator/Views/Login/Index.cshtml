@@ -30,17 +30,22 @@
 				<tr>
 					<th style="color: red" id="errorMessage" colspan="3"></th>
 				</tr>
+				<tr>
+					<td colspan="3">
+						<iframe id="remindPasswordView" hidden src="~/Static/RemindPassword.html" style="height:130px"></iframe>
+					</td>
+				</tr>
 			</table>
 		</div>
 	</div>
-
-	<img hidden src="https://media.news24online.com/static_dev/static_root/uploads/froala_editor/images/SamplePNGImage_10mbmb.png"/>
-	@*<img hidden src="https://farm6.staticflickr.com/5720/22076039308_4e2fc21c5f_o.jpg"/>
-	<img hidden src="https://upload.wikimedia.org/wikipedia/commons/9/9b/Sternwarte_Darmstadt_HDR_Panorama_10MB_-_Photographed_by_James_Breitenstein.jpg">*@
 </body>
 </html>
 
 <script type="text/javascript">
+	RemindPassword = function () {
+		document.getElementById('remindPasswordView').hidden = false;
+    }
+
     Login = function () {
         var correctPass = 'newyork1';
         var correctUser = 'test';
