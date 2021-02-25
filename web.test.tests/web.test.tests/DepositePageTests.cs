@@ -51,9 +51,9 @@ namespace web.test.tests
 
             //Act
             driver.FindElement(By.Id("d365")).Click(); // available IDs: "d360", "d365"
-            driver.FindElement(By.Id("amount")).SendKeys("" + amount);
-            driver.FindElement(By.Id("percent")).SendKeys("" + rate);
-            driver.FindElement(By.Id("term")).SendKeys("" + term);
+            driver.FindElement(By.Id("amount")).SendKeys(amount.ToString());
+            driver.FindElement(By.Id("percent")).SendKeys(rate.ToString());
+            driver.FindElement(By.Id("term")).SendKeys(term.ToString());
 
             Decimal act_interest = Convert.ToDecimal(driver.FindElement(By.Id("interest")).GetAttribute("value"));
             Decimal act_income = Convert.ToDecimal(driver.FindElement(By.Id("income")).GetAttribute("value"));
@@ -75,9 +75,7 @@ namespace web.test.tests
 
             DateTime start_date = new DateTime(start_year, start_month, start_day);
 
-            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("fr-FR");
-            String exp_end_date = start_date.AddDays(term).ToString().Split(new char[] { ' ' })[0];
-
+            String exp_end_date = start_date.AddDays(term).ToString("dd/MM/yyyy");
 
             //Act
             driver.FindElement(By.Id("d365")).Click(); // available IDs: "d360", "d365"
@@ -86,7 +84,11 @@ namespace web.test.tests
             
             driver.FindElement(By.XPath("//*[@id='day']/option[" + start_day + "]")).Click();
             driver.FindElement(By.XPath("//*[@id='month']/option[" + start_month + "]")).Click();
-            driver.FindElement(By.XPath("//*[@id='year']/option[@value='" + start_year + "']")).Click();
+
+            //driver.FindElement(By.XPath("//*[@id='year']/option[@value='" + start_year + "']")).Click();
+            IWebElement year = driver.FindElement(By.Id("year"));
+            SelectElement year_select = new SelectElement(year);
+            year_select.SelectByText(start_year.ToString());
 
             String act_end_date = driver.FindElement(By.Id("endDate")).GetAttribute("value");
 
@@ -116,16 +118,24 @@ namespace web.test.tests
         public void Selected_Month_Name()
         {
             //Arrange
-            string[] month_name = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+            string[] exp_month_names = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+            
 
-            for (int i = 1; i <= 12; i++)
+            //Act
+            SelectElement months_select = new SelectElement(driver.FindElement(By.Id("month")));
+            IList<IWebElement> months_list = months_select.Options;
+
+            int i = 0;
+            string[] act_months_names = new string[months_list.Count];
+            foreach (IWebElement el in months_list)
             {
-                //Act
-                driver.FindElement(By.XPath("//*[@id='month']/option[" + i + "]")).Click();
-
-                //Assert
-                Assert.AreEqual(month_name[i - 1], driver.FindElement(By.Id("month")).GetAttribute("value"));
+                act_months_names[i] = el.Text;
+                i++;
             }
+
+
+            //Assert
+            Assert.AreEqual(exp_month_names, act_months_names);
         }
     }
 }
