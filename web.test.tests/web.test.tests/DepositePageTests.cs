@@ -42,27 +42,96 @@ namespace web.test.tests
         public void Income_And_Interest()
         {
             //Arrange
-            Decimal amount = 1234m; // range [0; 100,000]
-            Decimal rate = 13.17m; // range [0; 100] 
-            int term = 364; // range [0; 360/365]
+            Decimal[] amount_array = { 0m, 1m, 100.54m, 100000m, 100001m };
+            Decimal[] rate_array = { 0m, 1m, 13.5m, 100m, 101m };
+            Decimal[] term_array = { 0m, 1m, 7.7m, 0m, 0m };
            
-            Decimal exp_interest = Math.Round (amount * rate * term / 100 / 365, 2);
-            Decimal exp_income = amount + exp_interest;
+            var year_map = new Dictionary<String, int>();
+            year_map.Add("d360", 360);
+            year_map.Add("d365", 365);
 
             //Act
-            driver.FindElement(By.Id("d365")).Click(); // available IDs: "d360", "d365"
-            driver.FindElement(By.Id("amount")).SendKeys(amount.ToString());
-            driver.FindElement(By.Id("percent")).SendKeys(rate.ToString());
-            driver.FindElement(By.Id("term")).SendKeys(term.ToString());
+            int n = 0;
 
-            Decimal act_interest = Convert.ToDecimal(driver.FindElement(By.Id("interest")).GetAttribute("value"));
-            Decimal act_income = Convert.ToDecimal(driver.FindElement(By.Id("income")).GetAttribute("value"));
+            String financial_year_Id;
+            int year_length;
+
+            Decimal exp_interest;
+            Decimal exp_income;
+
+            Decimal act_interest;
+            Decimal act_income;
+
+            int array_size = amount_array.Length * rate_array.Length * term_array.Length * year_map.Count;
+
+            Decimal[] exp_interest_array = new Decimal[array_size];
+            Decimal[] exp_income_array = new Decimal[array_size];
+
+            Decimal[] act_interest_array = new Decimal[array_size];
+            Decimal[] act_income_array = new Decimal[array_size];
+
+            foreach (var pair in year_map)
+            {
+                financial_year_Id = pair.Key;
+                year_length = pair.Value;
+
+                term_array [term_array.Length - 2]= year_length;
+                term_array[term_array.Length - 1] = year_length + 1;
+
+                //Act
+                driver.FindElement(By.Id(financial_year_Id)).Click();
+
+                for (int i = 0; i < amount_array.Length; i++)
+                {
+                    driver.FindElement(By.Id("amount")).Clear();
+                    driver.FindElement(By.Id("amount")).SendKeys(amount_array[i].ToString());
+                    for (int j = 0; j < rate_array.Length; j++)
+                    {
+                        driver.FindElement(By.Id("percent")).Clear();
+                        driver.FindElement(By.Id("percent")).SendKeys(rate_array[j].ToString());
+                        for (int k = 0; k < term_array.Length; k++)
+                        {
+                            driver.FindElement(By.Id("term")).Clear();
+                            driver.FindElement(By.Id("term")).SendKeys(term_array[k].ToString());
+                            if (amount_array[i] > 100000)
+                            {
+                                exp_interest = 0;
+                                exp_income = 0;
+                            }
+                            else if (rate_array[j] > 100 | term_array[k] > year_length)
+                            {
+                                exp_interest = 0;
+                                exp_income = amount_array[i] + exp_interest;
+                            }
+                            else
+                            {
+                                exp_interest = Math.Round(amount_array[i] * rate_array[j] * term_array[k] / 100 / year_length, 2);
+                                exp_income = amount_array[i] + exp_interest;
+                            }
+
+                            exp_interest_array[n] = exp_interest;
+                            exp_income_array[n] = exp_income;
+
+                            act_interest = Convert.ToDecimal(driver.FindElement(By.Id("interest")).GetAttribute("value"));
+                            act_income = Convert.ToDecimal(driver.FindElement(By.Id("income")).GetAttribute("value"));
+
+                            act_interest_array[n] = act_interest;
+                            act_income_array[n] = act_income;
+
+                            Console.WriteLine("n=" + n + ". amount=" + amount_array[i] + "; rate=" + rate_array[j] + "; term=" + term_array[k] + ";");
+                            Console.WriteLine("exp_interest=" + exp_interest + "; act_interest=" + act_interest + "; exp_income= " + exp_income + "; act_income= " + act_income);
+
+                            n++;
+                        }
+                    }
+                }
+            }
 
             //Assert
-            Assert.AreEqual(exp_interest, act_interest);
-            Assert.AreEqual(exp_income, act_income);
+            Assert.AreEqual(exp_interest_array, act_interest_array);
+            Assert.AreEqual(exp_income_array, act_income_array);
         }
-
+        
 
         [Test]
         public void End_Date()
