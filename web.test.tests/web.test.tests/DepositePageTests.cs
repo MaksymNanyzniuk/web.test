@@ -137,41 +137,50 @@ namespace web.test.tests
         public void End_Date()
         {
             //Arrange
-            int start_day = 1;
-            int start_month = 1;
-            int start_year = 2020;
-            int term = 364; // range [0; 360/365]
+            int start_day = 15;
+            int start_month = 7;
+            int start_year = 2019;
+            int[] term_array = { 0, 1, 16, 17, 169, 170, 229, 365 };
+
+            //Act
+            SelectElement year_select = new SelectElement(driver.FindElement(By.Id("year")));
+            year_select.SelectByText(start_year.ToString());
+
+            SelectElement month_select = new SelectElement(driver.FindElement(By.Id("month")));
+            month_select.SelectByIndex(start_month-1);
+
+            SelectElement day_select = new SelectElement(driver.FindElement(By.Id("day")));
+            day_select.SelectByText(start_day.ToString());
+            
+            //driver.FindElement(By.XPath("//*[@id='month']/option[" + start_month + "]")).Click();
 
             DateTime start_date = new DateTime(start_year, start_month, start_day);
 
-            String exp_end_date = start_date.AddDays(term).ToString("dd/MM/yyyy");
+            String[] exp_end_date_array = new String[term_array.Length];
+            String[] act_end_date_array = new string[term_array.Length];
 
-            //Act
-            driver.FindElement(By.Id("d365")).Click(); // available IDs: "d360", "d365"
+            IWebElement term_field = driver.FindElement(By.Id("term"));
 
-            driver.FindElement(By.Id("term")).SendKeys("" + term);
-            
-            driver.FindElement(By.XPath("//*[@id='day']/option[" + start_day + "]")).Click();
-            driver.FindElement(By.XPath("//*[@id='month']/option[" + start_month + "]")).Click();
+            for (int i = 0; i < term_array.Length; i++)
+            {
+                exp_end_date_array[i] = start_date.AddDays(term_array[i]).ToString("dd/MM/yyyy");
 
-            //driver.FindElement(By.XPath("//*[@id='year']/option[@value='" + start_year + "']")).Click();
-            IWebElement year = driver.FindElement(By.Id("year"));
-            SelectElement year_select = new SelectElement(year);
-            year_select.SelectByText(start_year.ToString());
+                term_field.Clear();
+                term_field.SendKeys(term_array[i].ToString());
 
-            String act_end_date = driver.FindElement(By.Id("endDate")).GetAttribute("value");
-
+                act_end_date_array[i] = driver.FindElement(By.Id("endDate")).GetAttribute("value");
+            }
 
             //Assert
-            Assert.AreEqual(exp_end_date, act_end_date);
+            Assert.AreEqual(exp_end_date_array, act_end_date_array);
         }
 
 
         [Test]
-        public void Financial_Year_IsClicked()
+        public void Financial_Year_IsClicked_360()
         {
             //Arrange
-            String radio_button_id = "d365"; // available IDs: "d360", "d365"
+            String radio_button_id = "d360";
 
 
             //Act
@@ -184,7 +193,23 @@ namespace web.test.tests
 
 
         [Test]
-        public void Selected_Month_Name()
+        public void Financial_Year_IsClicked_365()
+        {
+            //Arrange
+            String radio_button_id = "d365";
+
+
+            //Act
+            driver.FindElement(By.Id(radio_button_id)).Click();
+
+
+            //Assert
+            Assert.AreEqual("true", driver.FindElement(By.Id(radio_button_id)).GetAttribute("checked"));
+        }
+
+
+        [Test]
+        public void Months_Order()
         {
             //Arrange
             string[] exp_month_names = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
@@ -206,5 +231,64 @@ namespace web.test.tests
             //Assert
             Assert.AreEqual(exp_month_names, act_months_names);
         }
+
+
+        [Test]
+        public void Days_per_Month_common_year()
+        {
+            //Arrange
+            int year = 2010;
+            int[] exp_days_number = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+            //Act
+            SelectElement year_select = new SelectElement(driver.FindElement(By.Id("year")));
+            year_select.SelectByText(year.ToString());
+
+            SelectElement months_select = new SelectElement(driver.FindElement(By.Id("month")));
+            IList<IWebElement> months_list = months_select.Options;
+
+            int i = 0;
+            int[] act_days_number = new int[12];
+            foreach (IWebElement el in months_list)
+            {
+                el.Click();
+                SelectElement day = new SelectElement(driver.FindElement(By.Id("day")));
+                act_days_number[i] = day.Options.Count;
+                i++;
+            }
+
+            //Assert
+            Assert.AreEqual(exp_days_number, act_days_number);
+        }
+
+
+        [Test]
+        public void Days_per_Month_leap_year()
+        {
+            //Arrange
+            int year = 2012;
+            int[] exp_days_number = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+            //Act
+            SelectElement year_select = new SelectElement(driver.FindElement(By.Id("year")));
+            year_select.SelectByText(year.ToString());
+
+            SelectElement months_select = new SelectElement(driver.FindElement(By.Id("month")));
+            IList<IWebElement> months_list = months_select.Options;
+
+            int i = 0;
+            int[] act_days_number = new int[12];
+            foreach (IWebElement el in months_list)
+            {
+                el.Click();
+                SelectElement day = new SelectElement(driver.FindElement(By.Id("day")));
+                act_days_number[i] = day.Options.Count;
+                i++;
+            }
+
+            //Assert
+            Assert.AreEqual(exp_days_number, act_days_number);
+        }
+
     }
 }
