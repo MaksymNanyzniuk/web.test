@@ -42,65 +42,145 @@ namespace web.test.tests
         public void Income_And_Interest()
         {
             //Arrange
-            Decimal amount = 1234m; // range [0; 100,000]
-            Decimal rate = 13.17m; // range [0; 100] 
-            int term = 364; // range [0; 360/365]
+            Decimal[] amount_array = { 0m, 1m, 100.54m, 100000m, 100001m };
+            Decimal[] rate_array = { 0m, 1m, 13.5m, 100m, 101m };
+            Decimal[] term_array = { 0m, 1m, 7.7m, 0m, 0m };
            
-            Decimal exp_interest = Math.Round (amount * rate * term / 100 / 365, 2);
-            Decimal exp_income = amount + exp_interest;
+            var year_map = new Dictionary<String, int>();
+            year_map.Add("d360", 360);
+            year_map.Add("d365", 365);
 
             //Act
-            driver.FindElement(By.Id("d365")).Click(); // available IDs: "d360", "d365"
-            driver.FindElement(By.Id("amount")).SendKeys("" + amount);
-            driver.FindElement(By.Id("percent")).SendKeys("" + rate);
-            driver.FindElement(By.Id("term")).SendKeys("" + term);
+            int n = 0;
 
-            Decimal act_interest = Convert.ToDecimal(driver.FindElement(By.Id("interest")).GetAttribute("value"));
-            Decimal act_income = Convert.ToDecimal(driver.FindElement(By.Id("income")).GetAttribute("value"));
+            String financial_year_Id;
+            int year_length;
+
+            Decimal exp_interest;
+            Decimal exp_income;
+
+            Decimal act_interest;
+            Decimal act_income;
+
+            int array_size = amount_array.Length * rate_array.Length * term_array.Length * year_map.Count;
+
+            Decimal[] exp_interest_array = new Decimal[array_size];
+            Decimal[] exp_income_array = new Decimal[array_size];
+
+            Decimal[] act_interest_array = new Decimal[array_size];
+            Decimal[] act_income_array = new Decimal[array_size];
+
+            foreach (var pair in year_map)
+            {
+                financial_year_Id = pair.Key;
+                year_length = pair.Value;
+
+                term_array [term_array.Length - 2]= year_length;
+                term_array[term_array.Length - 1] = year_length + 1;
+
+                //Act
+                driver.FindElement(By.Id(financial_year_Id)).Click();
+
+                for (int i = 0; i < amount_array.Length; i++)
+                {
+                    driver.FindElement(By.Id("amount")).Clear();
+                    driver.FindElement(By.Id("amount")).SendKeys(amount_array[i].ToString());
+                    for (int j = 0; j < rate_array.Length; j++)
+                    {
+                        driver.FindElement(By.Id("percent")).Clear();
+                        driver.FindElement(By.Id("percent")).SendKeys(rate_array[j].ToString());
+                        for (int k = 0; k < term_array.Length; k++)
+                        {
+                            driver.FindElement(By.Id("term")).Clear();
+                            driver.FindElement(By.Id("term")).SendKeys(term_array[k].ToString());
+                            if (amount_array[i] > 100000)
+                            {
+                                exp_interest = 0;
+                                exp_income = 0;
+                            }
+                            else if (rate_array[j] > 100 | term_array[k] > year_length)
+                            {
+                                exp_interest = 0;
+                                exp_income = amount_array[i] + exp_interest;
+                            }
+                            else
+                            {
+                                exp_interest = Math.Round(amount_array[i] * rate_array[j] * term_array[k] / 100 / year_length, 2);
+                                exp_income = amount_array[i] + exp_interest;
+                            }
+
+                            exp_interest_array[n] = exp_interest;
+                            exp_income_array[n] = exp_income;
+
+                            act_interest = Convert.ToDecimal(driver.FindElement(By.Id("interest")).GetAttribute("value"));
+                            act_income = Convert.ToDecimal(driver.FindElement(By.Id("income")).GetAttribute("value"));
+
+                            act_interest_array[n] = act_interest;
+                            act_income_array[n] = act_income;
+
+                            Console.WriteLine("n=" + n + ". amount=" + amount_array[i] + "; rate=" + rate_array[j] + "; term=" + term_array[k] + ";");
+                            Console.WriteLine("exp_interest=" + exp_interest + "; act_interest=" + act_interest + "; exp_income= " + exp_income + "; act_income= " + act_income);
+
+                            n++;
+                        }
+                    }
+                }
+            }
 
             //Assert
-            Assert.AreEqual(exp_interest, act_interest);
-            Assert.AreEqual(exp_income, act_income);
+            Assert.AreEqual(exp_interest_array, act_interest_array);
+            Assert.AreEqual(exp_income_array, act_income_array);
         }
-
+        
 
         [Test]
         public void End_Date()
         {
             //Arrange
-            int start_day = 1;
-            int start_month = 1;
-            int start_year = 2020;
-            int term = 364; // range [0; 360/365]
+            int start_day = 15;
+            int start_month = 7;
+            int start_year = 2019;
+            int[] term_array = { 0, 1, 16, 17, 169, 170, 229, 365 };
+
+            //Act
+            SelectElement year_select = new SelectElement(driver.FindElement(By.Id("year")));
+            year_select.SelectByText(start_year.ToString());
+
+            SelectElement month_select = new SelectElement(driver.FindElement(By.Id("month")));
+            month_select.SelectByIndex(start_month-1);
+
+            SelectElement day_select = new SelectElement(driver.FindElement(By.Id("day")));
+            day_select.SelectByText(start_day.ToString());
+            
+            //driver.FindElement(By.XPath("//*[@id='month']/option[" + start_month + "]")).Click();
 
             DateTime start_date = new DateTime(start_year, start_month, start_day);
 
-            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("fr-FR");
-            String exp_end_date = start_date.AddDays(term).ToString().Split(new char[] { ' ' })[0];
+            String[] exp_end_date_array = new String[term_array.Length];
+            String[] act_end_date_array = new string[term_array.Length];
 
+            IWebElement term_field = driver.FindElement(By.Id("term"));
 
-            //Act
-            driver.FindElement(By.Id("d365")).Click(); // available IDs: "d360", "d365"
+            for (int i = 0; i < term_array.Length; i++)
+            {
+                exp_end_date_array[i] = start_date.AddDays(term_array[i]).ToString("dd/MM/yyyy");
 
-            driver.FindElement(By.Id("term")).SendKeys("" + term);
-            
-            driver.FindElement(By.XPath("//*[@id='day']/option[" + start_day + "]")).Click();
-            driver.FindElement(By.XPath("//*[@id='month']/option[" + start_month + "]")).Click();
-            driver.FindElement(By.XPath("//*[@id='year']/option[@value='" + start_year + "']")).Click();
+                term_field.Clear();
+                term_field.SendKeys(term_array[i].ToString());
 
-            String act_end_date = driver.FindElement(By.Id("endDate")).GetAttribute("value");
-
+                act_end_date_array[i] = driver.FindElement(By.Id("endDate")).GetAttribute("value");
+            }
 
             //Assert
-            Assert.AreEqual(exp_end_date, act_end_date);
+            Assert.AreEqual(exp_end_date_array, act_end_date_array);
         }
 
 
         [Test]
-        public void Financial_Year_IsClicked()
+        public void Financial_Year_IsClicked_360()
         {
             //Arrange
-            String radio_button_id = "d365"; // available IDs: "d360", "d365"
+            String radio_button_id = "d360";
 
 
             //Act
@@ -113,19 +193,102 @@ namespace web.test.tests
 
 
         [Test]
-        public void Selected_Month_Name()
+        public void Financial_Year_IsClicked_365()
         {
             //Arrange
-            string[] month_name = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+            String radio_button_id = "d365";
 
-            for (int i = 1; i <= 12; i++)
-            {
-                //Act
-                driver.FindElement(By.XPath("//*[@id='month']/option[" + i + "]")).Click();
 
-                //Assert
-                Assert.AreEqual(month_name[i - 1], driver.FindElement(By.Id("month")).GetAttribute("value"));
-            }
+            //Act
+            driver.FindElement(By.Id(radio_button_id)).Click();
+
+
+            //Assert
+            Assert.AreEqual("true", driver.FindElement(By.Id(radio_button_id)).GetAttribute("checked"));
         }
+
+
+        [Test]
+        public void Months_Order()
+        {
+            //Arrange
+            string[] exp_month_names = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+            
+
+            //Act
+            SelectElement months_select = new SelectElement(driver.FindElement(By.Id("month")));
+            IList<IWebElement> months_list = months_select.Options;
+
+            int i = 0;
+            string[] act_months_names = new string[months_list.Count];
+            foreach (IWebElement el in months_list)
+            {
+                act_months_names[i] = el.Text;
+                i++;
+            }
+
+
+            //Assert
+            Assert.AreEqual(exp_month_names, act_months_names);
+        }
+
+
+        [Test]
+        public void Days_per_Month_common_year()
+        {
+            //Arrange
+            int year = 2010;
+            int[] exp_days_number = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+            //Act
+            SelectElement year_select = new SelectElement(driver.FindElement(By.Id("year")));
+            year_select.SelectByText(year.ToString());
+
+            SelectElement months_select = new SelectElement(driver.FindElement(By.Id("month")));
+            IList<IWebElement> months_list = months_select.Options;
+
+            int i = 0;
+            int[] act_days_number = new int[12];
+            foreach (IWebElement el in months_list)
+            {
+                el.Click();
+                SelectElement day = new SelectElement(driver.FindElement(By.Id("day")));
+                act_days_number[i] = day.Options.Count;
+                i++;
+            }
+
+            //Assert
+            Assert.AreEqual(exp_days_number, act_days_number);
+        }
+
+
+        [Test]
+        public void Days_per_Month_leap_year()
+        {
+            //Arrange
+            int year = 2012;
+            int[] exp_days_number = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+            //Act
+            SelectElement year_select = new SelectElement(driver.FindElement(By.Id("year")));
+            year_select.SelectByText(year.ToString());
+
+            SelectElement months_select = new SelectElement(driver.FindElement(By.Id("month")));
+            IList<IWebElement> months_list = months_select.Options;
+
+            int i = 0;
+            int[] act_days_number = new int[12];
+            foreach (IWebElement el in months_list)
+            {
+                el.Click();
+                SelectElement day = new SelectElement(driver.FindElement(By.Id("day")));
+                act_days_number[i] = day.Options.Count;
+                i++;
+            }
+
+            //Assert
+            Assert.AreEqual(exp_days_number, act_days_number);
+        }
+
     }
 }
