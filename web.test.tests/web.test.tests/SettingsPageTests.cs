@@ -177,5 +177,44 @@ namespace web.test.tests
             //Assert
             Assert.AreEqual(exp_interest, act_interest);
         }
+
+
+        [Test]
+        public void Currency_Applied()
+        {
+            //Arrange
+            int currency_setting_item = 1; //[0; 2]
+
+            //Act
+            SelectElement currency_setting_select = new SelectElement(driver.FindElement(By.XPath("//tr[3]/td/select")));
+            currency_setting_select.SelectByIndex(currency_setting_item);
+
+            String selected_currency_setting = driver.FindElement(By.XPath("//tr[3]/td/select")).GetAttribute("value");
+
+            driver.FindElement(By.Id("save")).Click();
+            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
+
+            String exp_currency_sign = "";
+            switch (selected_currency_setting)
+            {
+                case "$ - US dollar":
+                    exp_currency_sign = "$";
+                    break;
+                case "€ - euro":
+                    exp_currency_sign = "€";
+                    break;
+                case "£ - Great Britain Pound":
+                    exp_currency_sign = "£";
+                    break;
+                default:
+                    Console.WriteLine("Unexpected currency selected in the dropdown.");
+                    break;
+            }
+
+            String act_currency_sign = driver.FindElement(By.XPath("//tr[1]/td[3]")).Text;
+
+            //Assert
+            Assert.AreEqual(exp_currency_sign, act_currency_sign);
+        }
     }
 }
