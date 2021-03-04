@@ -6,3 +6,4 @@ packages/*
 web.test.tests/.vs/*
 web.test.tests/web.test.tests/bin/*
 web.test.tests/web.test.tests/obj/*
+/web.test.tests/web.test.tests/Experiments.cs
