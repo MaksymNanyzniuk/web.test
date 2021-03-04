@@ -81,7 +81,7 @@ namespace web.test.tests
             driver.FindElement(By.Id("loginBtn")).Click();
 
             string error = driver.FindElement(By.Id("errorMessage")).Text;
-            Assert.AreEqual("Incorrect user name!", error);
+            Assert.AreEqual("Incorrect user name or password!", error);
         }
 
         [Test]
@@ -93,7 +93,7 @@ namespace web.test.tests
             driver.FindElement(By.Id("loginBtn")).Click();
 
             string error = driver.FindElement(By.Id("errorMessage")).Text;
-            Assert.AreEqual("Incorrect user name!", error);
+            Assert.AreEqual("Incorrect user name or password!", error);
         }
 
         [Test]
@@ -114,7 +114,7 @@ namespace web.test.tests
             driver.FindElement(By.Id("loginBtn")).Click();
 
             string error = driver.FindElement(By.Id("errorMessage")).Text;
-            Assert.AreEqual("Incorrect password!", error);
+            Assert.AreEqual("Incorrect user name or password!", error);
         }
 
         [Test]
