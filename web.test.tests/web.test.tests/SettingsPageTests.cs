@@ -4,6 +4,7 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace web.test.tests
@@ -112,6 +113,69 @@ namespace web.test.tests
 
             //Assert
             Assert.AreEqual(exp_end_date, act_end_date);
+        }
+
+
+        [Test]
+        public void Number_Format_Applied()
+        {
+            //Arrange
+            int number_format_item = 0; //[0; 3]
+           
+            Decimal amount = 12345m;
+            int rate = 74;
+            int term = 211;
+
+            String financial_year_Id = "d365";
+            int year_length = 365;
+
+            //Act
+            SelectElement number_format_select = new SelectElement(driver.FindElement(By.XPath("//tr[2]/td/select")));
+            number_format_select.SelectByIndex(number_format_item);
+            
+            String selected_number_format_setting = driver.FindElement(By.XPath("//tr[2]/td/select")).GetAttribute("value");
+            
+            driver.FindElement(By.Id("save")).Click();
+            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
+
+            driver.FindElement(By.Id("amount")).Clear();
+            driver.FindElement(By.Id("amount")).SendKeys(amount.ToString());
+
+            driver.FindElement(By.Id("percent")).Clear();
+            driver.FindElement(By.Id("percent")).SendKeys(rate.ToString());
+
+            driver.FindElement(By.Id("term")).Clear();
+            driver.FindElement(By.Id("term")).SendKeys(term.ToString());
+
+            driver.FindElement(By.Id(financial_year_Id)).Click();
+
+            NumberFormatInfo nfi = new CultureInfo("en-US", true).NumberFormat;
+            switch (selected_number_format_setting)
+            {
+                case "123,456,789.00":
+                    break;
+                case "123.456.789,00":
+                    nfi.NumberGroupSeparator = ".";
+                    nfi.NumberDecimalSeparator = ",";
+                    break;
+                case "123 456 789.00":
+                    nfi.NumberGroupSeparator = " ";
+                    break;
+                case "123 456 789,00":
+                    nfi.NumberGroupSeparator = " ";
+                    nfi.NumberDecimalSeparator = ",";
+                    break;
+                default:
+                    Console.WriteLine("Unexpected number format selected in the dropdown.");
+                    break;
+            }
+
+            String exp_interest = Math.Round(amount * rate * term / 100 / year_length, 2).ToString("N", nfi);
+            
+            String act_interest = driver.FindElement(By.Id("interest")).GetAttribute("value");
+
+            //Assert
+            Assert.AreEqual(exp_interest, act_interest);
         }
     }
 }
