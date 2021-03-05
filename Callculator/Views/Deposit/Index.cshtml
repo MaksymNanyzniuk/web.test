@@ -73,7 +73,7 @@
 <script type="text/javascript">
 	Date.prototype.yyyymmdd = function () {
 		var mm = this.getMonth() + 1;
-		var dd = this.getDate() + 1;
+		var dd = this.getDate();
 
 		return [(dd > 9 ? '' : '0') + dd, (mm > 9 ? '' : '0') + mm, this.getFullYear()].join('/');
 	};
@@ -96,7 +96,7 @@
     }
 
 	CalculateDate = function () {
-		var day = document.getElementById('day').selectedIndex;
+		var day = document.getElementById('day').selectedIndex + 1;
 		var month = document.getElementById('month').selectedIndex;
 		var year = document.getElementById('year').value;
 		var days = Number(document.getElementById('term').value);
