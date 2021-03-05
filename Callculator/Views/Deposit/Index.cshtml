@@ -43,7 +43,7 @@
 							<option>November</option>
 							<option>December</option>
 						</select>
-						<select id="year" onchange="CalculateDate()"></select>
+						<select id="year" onchange="ResetMonth(); CalculateDate();"></select>
 					</td>
 				</tr>
 				<tr>
@@ -106,7 +106,8 @@
 
 	ResetMonth = function () {
 		var day = ++document.getElementById('day').selectedIndex;
-		var month = document.getElementById('month').selectedIndex;
+        var month = document.getElementById('month').selectedIndex;
+        var leapYear = document.getElementById('year').value % 4 === 0;
 
 		switch (month) {
 			case 0:
@@ -127,7 +128,7 @@
 				SetDay(day < 31 ? day : 30);
 				break;
 			default:
-				AddOptions('day', 1, 28);
+				AddOptions('day', 1, leapYear ? 29 : 28);
 				SetDay(day < 29 ? day : 28);
 				break;
 		}
