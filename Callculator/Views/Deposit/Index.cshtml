@@ -23,7 +23,7 @@
 				</tr>
 				<tr>
 					<td>Investment Term: *</td>
-					<td colspan="2"><input id="term" oninput="VerifyNumber('term', 0, 365); Calculate()"/></td>
+					<td colspan="2"><input id="term" oninput="VerifyNumber('term', 0); Calculate()"/></td>
 				</tr>
 				<tr>
 					<td>Start date: *</td>
@@ -78,13 +78,22 @@
 		return [(dd > 9 ? '' : '0') + dd, (mm > 9 ? '' : '0') + mm, this.getFullYear()].join('/');
 	};
 
-	VerifyNumber = function (id, min, max) {
-		var value = Number(document.getElementById(id).value);
+    VerifyNumber = function (id, min, max) {
+        var value = Number(document.getElementById(id).value);
 
-		if (isNaN(value) || value < min || value > max) {
-			document.getElementById(id).value = "0";
-		}
-	}
+        if (isNaN(value) || value < min || value > max) {
+            document.getElementById(id).value = "0";
+        }
+    }
+
+    VerifyNumber = function (id, min) {
+        var max = document.getElementById('d360').checked ? 360 : 365;
+        var value = Number(document.getElementById(id).value);
+
+        if (isNaN(value) || value < min || value > max) {
+            document.getElementById(id).value = "0";
+        }
+    }
 
 	CalculateDate = function () {
 		var day = document.getElementById('day').selectedIndex;
