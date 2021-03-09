@@ -23,7 +23,7 @@
 				</tr>
 				<tr>
 					<td>Investment Term: *</td>
-					<td colspan="2"><input id="term" oninput="VerifyNumber('term', 0); Calculate()"/></td>
+					<td colspan="2"><input id="term" oninput="VerifyTerm('term', 0); Calculate()"/></td>
 				</tr>
 				<tr>
 					<td>Start date: *</td>
@@ -46,10 +46,10 @@
 						<select id="year" onchange="ResetMonth(); CalculateDate();"></select>
 					</td>
 				</tr>
-				<tr>
+				<tr id="finYear">
 					<td>Financial year: *</td>
-					<td><input type="radio" onchange="Calculate('d360')">365 days</input></td>
-					<td><input type="radio" onchange="Calculate('d365')">360 days</input></td>
+					<td><input type="radio" onchange="Calculate(360)">365 days</input></td>
+					<td><input type="radio" onchange="Calculate(365)">360 days</input></td>
 				</tr>
 				<tr>
 					<th align="left">Income: *</th>
@@ -61,7 +61,7 @@
 				</tr>
 				<tr>
 					<th align="left">end date: *</th>
-					<th><input readonly /></th>
+					<th><input id="endDate" readonly /></th>
 				</tr>
 				<tr><td colspan="3">* - mandatory fields</td></tr>
 			</table>
@@ -86,8 +86,8 @@
         }
     }
 
-    VerifyNumber = function (id, min) {
-        var max = document.getElementById('d360').checked ? 360 : 365;
+    VerifyTerm = function (id, min) {
+        var max = document.querySelector('#finYear input').checked ? 365 : 360;
         var value = Number(document.getElementById(id).value);
 
         if (isNaN(value) || value < min || value > max) {
@@ -163,13 +163,11 @@
 		}
 	}
 
-	Calculate = function (id) {
-		if (id !== undefined) { document.getElementById(id).checked = false; }
-
+	Calculate = function (year) {
+        year = year == undefined ? 365 : year;
 		var amount = Number(document.getElementById('amount').value);
 		var days = Number(document.getElementById('term').value);
 		var percent = Number(document.getElementById('percent').value);
-		var year = (document.getElementById('d360').checked || false) ? 360 : 365;
 		var interest = amount * percent * days / (year * 100);
 		var income = amount + interest;
 
