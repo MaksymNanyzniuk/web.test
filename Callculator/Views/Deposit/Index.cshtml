@@ -12,21 +12,21 @@
 
 			<table>
 				<tr>
-					<td>Deposit Ammount *</td>
+					<td>Deposit Amount: *</td>
 					<td><input id="amount" oninput="VerifyNumber('amount', 0, 100000); Calculate()"></input></td>
 					<td>$</td>
 				</tr>
 				<tr>
-					<td>Rate of intereset: *</td>
+					<td>Rate of interest: *</td>
 					<td><input id="percent" oninput="VerifyNumber('percent', 0, 100); Calculate()"></input></td>
 					<td>%</td>
 				</tr>
 				<tr>
 					<td>Investment Term: *</td>
-					<td colspan="2"><input id="term" oninput="VerifyTerm('term', 0); Calculate()"/></td>
+					<td colspan="2"><input id="term" oninput="VerifyTerm('term', 0); Calculate()" /></td>
 				</tr>
 				<tr>
-					<td>Start date: *</td>
+					<td>Start Date:</td>
 					<td colspan="2">
 						<select id="day" onchange="CalculateDate()"></select>
 						<select id="month" onchange="ResetMonth(); CalculateDate();">
@@ -34,8 +34,8 @@
 							<option>February</option>
 							<option>March</option>
 							<option>April</option>
-                            <option>May</option>
-							<option>Jun</option>
+							<option>May</option>
+							<option>June</option>
 							<option>July</option>
 							<option>August</option>
 							<option>September</option>
@@ -47,20 +47,20 @@
 					</td>
 				</tr>
 				<tr id="finYear">
-					<td>Financial year: *</td>
-					<td><input type="radio" onchange="Calculate(365)">365 days</input></td>
+					<td>Financial Year:</td>
+					<td><input type="radio" onchange="Calculate(365)" checked="checked">365 days</input></td>
 					<td><input type="radio" onchange="Calculate(360)">360 days</input></td>
 				</tr>
+                <tr>
+                    <th aalign="left">Interest Earned:</th>
+                    <th><input id="interest" readonly /></th>
+                </tr>
 				<tr>
-					<th align="left">Income: *</th>
+					<th align="left">Income:</th>
 					<th><input id="income" readonly /></th>
 				</tr>
 				<tr>
-					<th aalign="left">interest earned: *</th>
-					<th><input id="interest" readonly /></th>
-				</tr>
-				<tr>
-					<th align="left">end date: *</th>
+					<th align="left">End Date:</th>
 					<th><input id="endDate" readonly /></th>
 				</tr>
 				<tr><td colspan="3">* - mandatory fields</td></tr>
