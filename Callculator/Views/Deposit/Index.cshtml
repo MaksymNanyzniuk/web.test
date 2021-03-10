@@ -48,8 +48,8 @@
 				</tr>
 				<tr id="finYear">
 					<td>Financial year: *</td>
-					<td><input type="radio" onchange="Calculate(360)">365 days</input></td>
-					<td><input type="radio" onchange="Calculate(365)">360 days</input></td>
+					<td><input type="radio" onchange="Calculate(365)">365 days</input></td>
+					<td><input type="radio" onchange="Calculate(360)">360 days</input></td>
 				</tr>
 				<tr>
 					<th align="left">Income: *</th>
@@ -174,8 +174,14 @@
 		document.getElementById('interest').value = interest.toFixed(2);
 		document.getElementById('income').value = income.toFixed(2);
 
-		CalculateDate();
-	}
+        if (year == 360) {
+            document.querySelector('#finYear td:nth-child(2) input').checked = false;
+        } else {
+            document.querySelector('#finYear td:nth-child(3) input').checked = false;
+        }
+
+        CalculateDate();
+    }
 
 	SetCurrentDate();
 	Calculate();
