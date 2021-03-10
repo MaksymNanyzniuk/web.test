@@ -124,6 +124,9 @@ namespace web.test.tests
                             Console.WriteLine("exp_interest=" + exp_interest + "; act_interest=" + act_interest + "; exp_income= " + exp_income + "; act_income= " + act_income);
 
                             n++;
+
+                            //Assert
+                            Assert.AreEqual("true", driver.FindElement(By.XPath($"//*[text()='{financial_year_Id}']/input")).GetAttribute("checked"));
                         }
                     }
                 }
