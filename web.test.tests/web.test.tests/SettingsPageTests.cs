@@ -19,7 +19,7 @@ namespace web.test.tests
             driver = new ChromeDriver();
 
             driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(30);
-            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
+            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
 
             driver.Url = "http://localhost:64177/Login";
 
@@ -57,6 +57,11 @@ namespace web.test.tests
         {
             //Act
             driver.FindElement(By.Id("save")).Click();
+
+            IAlert alert = driver.SwitchTo().Alert(); // get alert
+            Assert.AreEqual("Changes are saved!", alert.Text); // get alert text
+            alert.Accept(); // well, click OK
+
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
             //Assert
@@ -88,9 +93,14 @@ namespace web.test.tests
             int term = 12;
 
             //Act
-            SelectElement date_format_select = new SelectElement(driver.FindElement(By.XPath("//tr[1]/td/select")));
+            SelectElement date_format_select = new SelectElement(driver.FindElement(By.XPath("//th[text()='Date format:']/following-sibling::td/select")));
             date_format_select.SelectByText(date_format_Settings);
             driver.FindElement(By.Id("save")).Click();
+
+            IAlert alert = driver.SwitchTo().Alert();
+            Assert.AreEqual("Changes are saved!", alert.Text);
+            alert.Accept();
+
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
             DateTime start_date = new DateTime(start_year, start_month, start_day);
@@ -121,21 +131,27 @@ namespace web.test.tests
         {
             //Arrange
             int number_format_item = 0; //[0; 3]
-           
+
             Decimal amount = 12345m;
             int rate = 74;
             int term = 211;
 
-            String financial_year_Id = "d365";
+            String financial_year = "365 days";
             int year_length = 365;
 
             //Act
-            SelectElement number_format_select = new SelectElement(driver.FindElement(By.XPath("//tr[2]/td/select")));
+            String xpath = "//th[text()='Number format:']/following-sibling::td/select";
+            SelectElement number_format_select = new SelectElement(driver.FindElement(By.XPath(xpath)));
             number_format_select.SelectByIndex(number_format_item);
-            
-            String selected_number_format_setting = driver.FindElement(By.XPath("//tr[2]/td/select")).GetAttribute("value");
-            
+
+            String selected_number_format_setting = driver.FindElement(By.XPath(xpath)).GetAttribute("value");
+
             driver.FindElement(By.Id("save")).Click();
+
+            IAlert alert = driver.SwitchTo().Alert();
+            Assert.AreEqual("Changes are saved!", alert.Text);
+            alert.Accept();
+
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
             driver.FindElement(By.Id("amount")).Clear();
@@ -147,7 +163,7 @@ namespace web.test.tests
             driver.FindElement(By.Id("term")).Clear();
             driver.FindElement(By.Id("term")).SendKeys(term.ToString());
 
-            driver.FindElement(By.Id(financial_year_Id)).Click();
+            driver.FindElement(By.XPath($"//td[text()='{financial_year}']/input")).Click();
 
             NumberFormatInfo nfi = new CultureInfo("en-US", true).NumberFormat;
             switch (selected_number_format_setting)
@@ -186,12 +202,18 @@ namespace web.test.tests
             int currency_setting_item = 1; //[0; 2]
 
             //Act
-            SelectElement currency_setting_select = new SelectElement(driver.FindElement(By.XPath("//tr[3]/td/select")));
+            String xpath = "//th[text()='Default currency:']/following-sibling::td/select";
+            SelectElement currency_setting_select = new SelectElement(driver.FindElement(By.XPath(xpath)));
             currency_setting_select.SelectByIndex(currency_setting_item);
 
-            String selected_currency_setting = driver.FindElement(By.XPath("//tr[3]/td/select")).GetAttribute("value");
+            String selected_currency_setting = driver.FindElement(By.XPath(xpath)).GetAttribute("value");
 
             driver.FindElement(By.Id("save")).Click();
+
+            IAlert alert = driver.SwitchTo().Alert(); // get alert
+            Assert.AreEqual("Changes are saved!", alert.Text); // get alert text
+            alert.Accept();
+
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
             String exp_currency_sign = "";
@@ -215,6 +237,16 @@ namespace web.test.tests
 
             //Assert
             Assert.AreEqual(exp_currency_sign, act_currency_sign);
+        }
+
+
+        [TestCase("Date format:")]
+        [TestCase("Number format:")]
+        [TestCase("Default currency:")]
+        public void Field_Captions_th(String caption)
+        {
+            //Assert
+            Assert.True(driver.FindElement(By.XPath($"//th[text() = '{caption}']")).Displayed);
         }
     }
 }
