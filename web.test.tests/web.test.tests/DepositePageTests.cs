@@ -224,7 +224,7 @@ namespace web.test.tests
             driver.FindElement(By.XPath($"//*[text()='{fin_year_360}']/input")).Click();
 
             //Assert
-            Assert.AreEqual("false", driver.FindElement(By.XPath($"//*[text()='{fin_year_365}']/input")).GetAttribute("checked"));
+            Assert.AreEqual(null, driver.FindElement(By.XPath($"//*[text()='{fin_year_365}']/input")).GetAttribute("checked"));
             Assert.AreEqual("true", driver.FindElement(By.XPath($"//*[text()='{fin_year_360}']/input")).GetAttribute("checked"));
         }
 
