@@ -1,12 +1,10 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
-using System.Threading;
 
 namespace web.test.tests
 {
@@ -47,7 +45,7 @@ namespace web.test.tests
             Decimal[] amount_array = { 0m, 1m, 100.54m, 100000m, 100001m };
             Decimal[] rate_array = { 0m, 1m, 13.5m, 100m, 101m };
             Decimal[] term_array = { 0m, 1m, 7.7m, 0m, 0m };
-           
+
             var year_map = new Dictionary<String, int>();
             year_map.Add(fin_year_360, 360);
             year_map.Add(fin_year_365, 365);
@@ -77,7 +75,7 @@ namespace web.test.tests
                 financial_year_Id = pair.Key;
                 year_length = pair.Value;
 
-                term_array [term_array.Length - 2]= year_length;
+                term_array[term_array.Length - 2] = year_length;
                 term_array[term_array.Length - 1] = year_length + 1;
 
                 //Act
@@ -136,7 +134,7 @@ namespace web.test.tests
             Assert.AreEqual(exp_interest_array, act_interest_array);
             Assert.AreEqual(exp_income_array, act_income_array);
         }
-        
+
 
         [TestCase(0, fin_year_360)]
         [TestCase(1, fin_year_360)]
@@ -163,18 +161,18 @@ namespace web.test.tests
             year_select.SelectByText(start_year.ToString());
 
             SelectElement month_select = new SelectElement(driver.FindElement(By.Id("month")));
-            month_select.SelectByIndex(start_month-1);
+            month_select.SelectByIndex(start_month - 1);
 
             SelectElement day_select = new SelectElement(driver.FindElement(By.Id("day")));
             day_select.SelectByText(start_day.ToString());
-            
+
             //driver.FindElement(By.XPath("//*[@id='month']/option[" + start_month + "]")).Click();
 
             DateTime start_date = new DateTime(start_year, start_month, start_day);
 
             IWebElement term_field = driver.FindElement(By.Id("term"));
 
-            String  exp_end_date = start_date.AddDays(term).ToString("dd/MM/yyyy");
+            String exp_end_date = start_date.AddDays(term).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
 
             term_field.Clear();
             term_field.SendKeys(term.ToString());
@@ -215,7 +213,7 @@ namespace web.test.tests
         {
             //Assert
             Assert.AreEqual("true", driver.FindElement(By.XPath($"//*[text()='{fin_year_365}']/input")).GetAttribute("checked"));
-            Assert.AreEqual(null , driver.FindElement(By.XPath($"//*[text()='{fin_year_360}']/input")).GetAttribute("checked"));
+            Assert.AreEqual(null, driver.FindElement(By.XPath($"//*[text()='{fin_year_360}']/input")).GetAttribute("checked"));
         }
 
 
@@ -235,8 +233,8 @@ namespace web.test.tests
         public void Months_Order()
         {
             //Arrange
-            string[] exp_month_names = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-            
+            string[] exp_month_names = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+
 
             //Act
             SelectElement months_select = new SelectElement(driver.FindElement(By.Id("month")));
