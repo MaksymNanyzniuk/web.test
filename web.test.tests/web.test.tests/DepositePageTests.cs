@@ -22,7 +22,7 @@ namespace web.test.tests
             driver = new ChromeDriver();
 
             driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(30);
-            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
+            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
 
             driver.Url = "http://localhost:64177/Login";
 
@@ -183,8 +183,6 @@ namespace web.test.tests
         }
 
 
-
-
         [Test]
         public void Financial_Year_IsClicked_360()
         {
@@ -312,5 +310,27 @@ namespace web.test.tests
             Assert.AreEqual(exp_days_number, act_days_number);
         }
 
+
+        [TestCase("Deposit Amount: *")]
+        [TestCase("Rate of Interest: *")]
+        [TestCase("Investment Term: *")]
+        [TestCase("Start Date:")]
+        [TestCase("Financial Year:")]
+        [TestCase("* - mandatory fields")]
+        public void Field_Captions_td(String caption)
+        {
+            //Assert
+            Assert.True(driver.FindElement(By.XPath($"//table//tr/td[text() = '{caption}']")).Displayed);
+        }
+
+
+        [TestCase("Income:")]
+        [TestCase("Interest Earned:")]
+        [TestCase("End Date:")]
+        public void Field_Captions_th(String caption)
+        {
+            //Assert
+            Assert.True(driver.FindElement(By.XPath($"//table//tr/th[text() = '{caption}']")).Displayed);
+        }
     }
 }
