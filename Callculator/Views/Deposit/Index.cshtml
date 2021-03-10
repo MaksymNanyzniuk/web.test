@@ -163,8 +163,10 @@
 		}
 	}
 
-	Calculate = function (year) {
-        year = year == undefined ? 365 : year;
+    Calculate = function (year) {
+        year = year == undefined
+            ? (document.querySelector('#finYear input').checked ? 365 : 360)
+            : year;
 		var amount = Number(document.getElementById('amount').value);
 		var days = Number(document.getElementById('term').value);
 		var percent = Number(document.getElementById('percent').value);
