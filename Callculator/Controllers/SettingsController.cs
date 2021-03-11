@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Web.Mvc;
 
 namespace Callculator.Controllers
@@ -55,7 +56,29 @@ namespace Callculator.Controllers
         {
             var result = System.IO.File.Exists(settings)
                 ? System.IO.File.ReadAllText(settings).Split(';')[2]
-                : "$";
+                : "$ - US dollar";
+
+            return Json(result.Split(' ').First(), JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpGet]
+        public ActionResult Get()
+        {
+            var result = new Settings
+            {
+                DateFormat = "dd/MMM/yyyy",
+                NumberFormat = "123,456,789.00",
+                Currency = "$ - US dollar"
+            };
+
+            if (System.IO.File.Exists(settings))
+            {
+                var values = System.IO.File.ReadAllText(settings).Split(';');
+
+                result.DateFormat = values[0];
+                result.NumberFormat = values[1];
+                result.Currency = values[2];
+            }
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }
@@ -63,8 +86,15 @@ namespace Callculator.Controllers
         [HttpPost]
         public ActionResult Save(string dateFormat, string numberFormat, string currency)
         {
-            System.IO.File.WriteAllText(settings, $"{dateFormat};{numberFormat};{currency.Split(' ')[0]}");
+            System.IO.File.WriteAllText(settings, $"{dateFormat};{numberFormat};{currency}");
             return Json("OK");
+        }
+
+        class Settings
+        {
+            public string DateFormat { get; set; }
+            public string NumberFormat { get; set; }
+            public string Currency { get; set; }
         }
     }
 }
