@@ -14,18 +14,18 @@
 				<tr>
 					<th>Date format:</th>
 					<td>
-						<select>
-							<option>DD-MM-YYYY</option>
-							<option>DD/MM/YYYY</option>
-							<option>MM/DD/YYYY</option>
-							<option>MMM DD YYYY</option>
+						<select id="dateFormat">
+							<option>dd/MM/yyyy</option>
+							<option>dd-MM-yyyy</option>
+							<option>MM/dd/yyyy</option>
+							<option>MM dd yyyy</option>
 						</select>
 					</td>
 				</tr>
 				<tr>
 					<th>Number format:</th>
 					<td>
-						<select>
+						<select id="numberFormat">
 							<option>123,456,789.00</option>
 							<option>123.456.789,00</option>
 							<option>123 456 789.00</option>
@@ -36,38 +36,60 @@
 				<tr>
 					<th>Defalut currency:</th>
 					<td>
-						<select>
+						<select id="currency">
 							<option>$ - US dollar</option>
 							<option>&euro; - euro</option>
 							<option>&pound; - Great Britain Pound</option>
 						</select>
 					</td>
 				</tr>
-				<tr><td style="height: 50px"/></tr>
+				<tr><td style="height: 50px" /></tr>
 			</table>
 
 			<div align="center">
-				<button onclick="alert('Changes are saved!'); window.location = '@Url.Action("Index", "Deposit")';" title="Save" id="save">Save</button>
+				<button onclick="Save(); window.location = '@Url.Action("Index", "Deposit")';" title="Save" id="save">Save</button>
 				<button onclick="window.location = '@Url.Action("Index", "Deposit")'" title="Save" id="cancel">Cancel</button>
 			</div>
 		</div>
 	</div>
 
-	<script>
-		function sleep (time) {
-			return new Promise((resolve) => setTimeout(resolve, time));
-		}
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script>
+    function Save() {
+        var dateFormat = document.getElementById('dateFormat');
+        var numberFormat = document.getElementById('numberFormat');
+        var currency = document.getElementById('currency');
 
-		function show(id) { document.getElementById(id).style.display = "initial"; }
-        function hide(id) { document.getElementById(id).style.display = "none"; }
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("Save", "Settings")',
+            data: {
+				'dateFormat' : dateFormat.options[dateFormat.selectedIndex].textContent,
+				'numberFormat' : numberFormat.options[numberFormat.selectedIndex].textContent,
+				'currency' : currency.options[currency.selectedIndex].textContent
+            },
 
-		hide('save');
-		hide('cancel');
+            dataType: 'json',
+            success: function (response) {
+                alert('Changes are saved!');
+            }
+        });
+    }
 
-		sleep(500).then(() => {
-			show('save');
-			sleep(500).then(() => show('cancel'));
-		});
+    function sleep (time) {
+        return new Promise((resolve) => setTimeout(resolve, time));
+    }
+
+    function show(id) { document.getElementById(id).style.display = "initial"; }
+    function hide(id) { document.getElementById(id).style.display = "none"; }
+
+    hide('save');
+    hide('cancel');
+
+    sleep(500).then(() => {
+        show('save');
+        sleep(500).then(() => show('cancel'));
+    });
 	</script>
 </body>
 </html>

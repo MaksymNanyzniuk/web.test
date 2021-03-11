@@ -14,7 +14,7 @@
 				<tr>
 					<td>Deposit Amount: *</td>
 					<td><input id="amount" oninput="VerifyNumber('amount', 0, 100000); Calculate()"></input></td>
-					<td>$</td>
+					<td id="currency">$</td>
 				</tr>
 				<tr>
 					<td>Rate of Interest: *</td>
@@ -70,14 +70,8 @@
 </body>
 </html>
 
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 <script type="text/javascript">
-	Date.prototype.yyyymmdd = function () {
-		var mm = this.getMonth() + 1;
-		var dd = this.getDate();
-
-		return [(dd > 9 ? '' : '0') + dd, (mm > 9 ? '' : '0') + mm, this.getFullYear()].join('/');
-	};
-
     VerifyNumber = function (id, min, max) {
         var value = Number(document.getElementById(id).value);
 
@@ -95,14 +89,40 @@
         }
     }
 
+    Date.prototype.yyyymmdd = function () {
+        var mm = this.getMonth() + 1;
+        var dd = this.getDate();
+        return [(dd > 9 ? '' : '0') + dd, (mm > 9 ? '' : '0') + mm, this.getFullYear()].join('/');
+    };
+
 	CalculateDate = function () {
 		var day = document.getElementById('day').selectedIndex + 1;
 		var month = document.getElementById('month').selectedIndex;
 		var year = document.getElementById('year').value;
 		var days = Number(document.getElementById('term').value);
 
-		document.getElementById('endDate').value = new Date(year, month, day + days).yyyymmdd();
-	}
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("Date", "Settings")',
+            data : {'date' : new Date(year, month, day + days).yyyymmdd()},
+            dataType: 'json',
+            success: function (response) {
+                document.getElementById('endDate').value = response;
+            }
+        });
+    }
+
+    SetNumber = function (id, number) {
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("Number", "Settings")',
+            data : {'number' : number},
+            dataType: 'json',
+            success: function (response) {
+                document.getElementById(id).value = response;
+            }
+        });
+    }
 
 	ResetMonth = function () {
 		var day = ++document.getElementById('day').selectedIndex;
@@ -173,8 +193,8 @@
 		var interest = amount * percent * days / (year * 100);
 		var income = amount + interest;
 
-		document.getElementById('interest').value = interest.toFixed(2);
-		document.getElementById('income').value = income.toFixed(2);
+        SetNumber('interest', interest);
+        SetNumber('income', income);
 
         if (year == 360) {
             document.querySelector('#finYear td:nth-child(2) input').checked = false;
@@ -185,6 +205,18 @@
         CalculateDate();
     }
 
+    SetCurrency = function() {
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("Currency", "Settings")',
+            dataType: 'json',
+            success: function (response) {
+                document.getElementById('currency').textContent = response;
+            }
+        });
+    }
+
+    SetCurrency();
 	SetCurrentDate();
 	Calculate();
 </script>
