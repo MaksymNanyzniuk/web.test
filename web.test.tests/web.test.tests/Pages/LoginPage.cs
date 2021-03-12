@@ -1,4 +1,6 @@
 ﻿using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
+using System;
 
 namespace web.test.tests.Pages
 {
@@ -21,7 +23,18 @@ namespace web.test.tests.Pages
 
         public IWebElement PasswordField => _driver.FindElement(By.Id("password"));
         public IWebElement LoginButton => _driver.FindElement(By.Id("loginBtn"));
-        public IWebElement RemindButton => _driver.FindElement(By.Id("remindBtn"));
+        public IWebElement RemindButton
+        {
+            get
+            {
+                try
+                {
+                    new WebDriverWait(_driver, TimeSpan.FromMilliseconds(2000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("remindBtn")));
+                }
+                catch { }
+                return _driver.FindElement(By.Id("remindBtn"));
+            }
+        }
 
         public void Login(string login, string password)
         {

@@ -66,12 +66,6 @@ namespace web.test.tests.Tests
         public void Button_Remind_Is_Present()
         {
             LoginPage loginPage = new LoginPage(driver);
-            try
-            {
-                new WebDriverWait(driver, TimeSpan.FromMilliseconds(2000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("remindBtn")));
-            }
-            catch { }
-
             Assert.IsTrue(loginPage.RemindButton.Displayed);
         }
 
@@ -79,11 +73,6 @@ namespace web.test.tests.Tests
         public void Button_Labels()
         {
             LoginPage loginPage = new LoginPage(driver);
-            try
-            {
-                new WebDriverWait(driver, TimeSpan.FromMilliseconds(2000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("remindBtn")));
-            }
-            catch { }
             Assert.AreEqual("Login", loginPage.LoginButton.Text);
             Assert.AreEqual("Remind password", loginPage.RemindButton.Text);
         }
