@@ -4,6 +4,7 @@ using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
+using web.test.tests.Pages;
 
 namespace web.test.tests.Tests
 {
@@ -21,9 +22,8 @@ namespace web.test.tests.Tests
 
             driver.Url = "http://localhost:64177/Login";
 
-            driver.FindElement(By.Id("login")).SendKeys("test");
-            driver.FindElement(By.Id("password")).SendKeys("newyork1");
-            driver.FindElement(By.Id("loginBtn")).Click();
+            LoginPage loginPage = new LoginPage(driver);
+            loginPage.Login("test", "newyork1");
 
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
@@ -41,11 +41,11 @@ namespace web.test.tests.Tests
         [Test]
         public void CancelBtn_Closes_Settings()
         {
-            //Act
-            driver.FindElement(By.Id("cancel")).Click();
+            SettingsPage settingsPage = new SettingsPage(driver);
+            settingsPage.CancelBtn.Click();
+
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
-            //Assert
             Assert.IsTrue(driver.FindElement(By.Id("amount")).Displayed);
         }
 
@@ -53,16 +53,11 @@ namespace web.test.tests.Tests
         [Test]
         public void SaveBtn_Closes_Settings()
         {
-            //Act
-            driver.FindElement(By.Id("save")).Click();
-
-            IAlert alert = driver.SwitchTo().Alert(); // get alert
-            Assert.AreEqual("Changes are saved!", alert.Text); // get alert text
-            alert.Accept(); // well, click OK
+            SettingsPage settingsPage = new SettingsPage(driver);
+            settingsPage.ClickSave();
 
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
-            //Assert
             Assert.IsTrue(driver.FindElement(By.Id("amount")).Displayed);
         }
 
@@ -70,12 +65,12 @@ namespace web.test.tests.Tests
         [Test]
         public void Logout_Exits()
         {
-            //Act
-            driver.FindElement(By.XPath("//div[text()='Logout']")).Click();
-            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("remindBtn")));
+            SettingsPage settingsPage = new SettingsPage(driver);
+            settingsPage.Logout.Click();
 
-            //Assert
-            Assert.IsTrue(driver.FindElement(By.Id("remindBtn")).Displayed);
+            LoginPage loginPage = new LoginPage(driver);
+            
+            Assert.IsTrue(loginPage.RemindButton.Displayed);
         }
 
 
@@ -83,7 +78,7 @@ namespace web.test.tests.Tests
         public void Date_Format_Applied()
         {
             //Arrange
-            String date_format_Settings = "MM/DD/YYYY";
+            String date_format_Settings = "MM/dd/yyyy";
             String date_format_DateTime = "MM/dd/yyyy";
             int start_day = 1;
             int start_month = 1;
@@ -91,13 +86,9 @@ namespace web.test.tests.Tests
             int term = 12;
 
             //Act
-            SelectElement date_format_select = new SelectElement(driver.FindElement(By.XPath("//th[text()='Date format:']/following-sibling::td/select")));
-            date_format_select.SelectByText(date_format_Settings);
-            driver.FindElement(By.Id("save")).Click();
-
-            IAlert alert = driver.SwitchTo().Alert();
-            Assert.AreEqual("Changes are saved!", alert.Text);
-            alert.Accept();
+            SettingsPage settingsPage = new SettingsPage(driver);
+            settingsPage.DateFormatSelect.SelectByText(date_format_Settings);
+            settingsPage.ClickSave();
 
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
@@ -138,17 +129,12 @@ namespace web.test.tests.Tests
             int year_length = 365;
 
             //Act
-            String xpath = "//th[text()='Number format:']/following-sibling::td/select";
-            SelectElement number_format_select = new SelectElement(driver.FindElement(By.XPath(xpath)));
-            number_format_select.SelectByIndex(number_format_item);
+            SettingsPage settingsPage = new SettingsPage(driver);
+            settingsPage.NumberFormatSelect.SelectByIndex(number_format_item);
 
-            String selected_number_format_setting = driver.FindElement(By.XPath(xpath)).GetAttribute("value");
+            String selected_number_format_setting = settingsPage.GetSelectedNumberFormatText();
 
-            driver.FindElement(By.Id("save")).Click();
-
-            IAlert alert = driver.SwitchTo().Alert();
-            Assert.AreEqual("Changes are saved!", alert.Text);
-            alert.Accept();
+            settingsPage.ClickSave();
 
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
@@ -200,17 +186,12 @@ namespace web.test.tests.Tests
             int currency_setting_item = 1; //[0; 2]
 
             //Act
-            String xpath = "//th[text()='Default currency:']/following-sibling::td/select";
-            SelectElement currency_setting_select = new SelectElement(driver.FindElement(By.XPath(xpath)));
-            currency_setting_select.SelectByIndex(currency_setting_item);
+            SettingsPage settingsPage = new SettingsPage(driver);
+            settingsPage.DefaultCurrencySelect.SelectByIndex(currency_setting_item);
 
-            String selected_currency_setting = driver.FindElement(By.XPath(xpath)).GetAttribute("value");
+            String selected_currency_setting = settingsPage.GetSelectedCurrencyText();
 
-            driver.FindElement(By.Id("save")).Click();
-
-            IAlert alert = driver.SwitchTo().Alert(); // get alert
-            Assert.AreEqual("Changes are saved!", alert.Text); // get alert text
-            alert.Accept();
+            settingsPage.ClickSave();
 
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
@@ -231,7 +212,7 @@ namespace web.test.tests.Tests
                     break;
             }
 
-            String act_currency_sign = driver.FindElement(By.XPath("//tr[1]/td[3]")).Text;
+            String act_currency_sign = driver.FindElement(By.Id("currency")).Text;
 
             //Assert
             Assert.AreEqual(exp_currency_sign, act_currency_sign);
