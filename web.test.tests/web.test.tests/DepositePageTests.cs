@@ -1,18 +1,18 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
-using System.Threading;
 
 namespace web.test.tests
 {
     class DepositePageTests
     {
         private IWebDriver driver;
+        const String fin_year_360 = "360 days";
+        const String fin_year_365 = "365 days";
 
         [SetUp]
         public void Setup()
@@ -20,7 +20,7 @@ namespace web.test.tests
             driver = new ChromeDriver();
 
             driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(30);
-            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
+            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
 
             driver.Url = "http://localhost:64177/Login";
 
@@ -45,10 +45,10 @@ namespace web.test.tests
             Decimal[] amount_array = { 0m, 1m, 100.54m, 100000m, 100001m };
             Decimal[] rate_array = { 0m, 1m, 13.5m, 100m, 101m };
             Decimal[] term_array = { 0m, 1m, 7.7m, 0m, 0m };
-           
+
             var year_map = new Dictionary<String, int>();
-            year_map.Add("d360", 360);
-            year_map.Add("d365", 365);
+            year_map.Add(fin_year_360, 360);
+            year_map.Add(fin_year_365, 365);
 
             //Act
             int n = 0;
@@ -75,11 +75,11 @@ namespace web.test.tests
                 financial_year_Id = pair.Key;
                 year_length = pair.Value;
 
-                term_array [term_array.Length - 2]= year_length;
+                term_array[term_array.Length - 2] = year_length;
                 term_array[term_array.Length - 1] = year_length + 1;
 
                 //Act
-                driver.FindElement(By.Id(financial_year_Id)).Click();
+                driver.FindElement(By.XPath($"//*[text()='{financial_year_Id}']/input")).Click();
 
                 for (int i = 0; i < amount_array.Length; i++)
                 {
@@ -122,6 +122,9 @@ namespace web.test.tests
                             Console.WriteLine("exp_interest=" + exp_interest + "; act_interest=" + act_interest + "; exp_income= " + exp_income + "; act_income= " + act_income);
 
                             n++;
+
+                            //Assert
+                            Assert.AreEqual("true", driver.FindElement(By.XPath($"//*[text()='{financial_year_Id}']/input")).GetAttribute("checked"));
                         }
                     }
                 }
@@ -131,89 +134,107 @@ namespace web.test.tests
             Assert.AreEqual(exp_interest_array, act_interest_array);
             Assert.AreEqual(exp_income_array, act_income_array);
         }
-        
 
-        [Test]
-        public void End_Date()
+
+        [TestCase(0, fin_year_360)]
+        [TestCase(1, fin_year_360)]
+        [TestCase(16, fin_year_360)]
+        [TestCase(17, fin_year_360)]
+        [TestCase(169, fin_year_360)]
+        [TestCase(170, fin_year_360)]
+        [TestCase(229, fin_year_360)]
+        [TestCase(360, fin_year_360)]
+        [TestCase(365, fin_year_365)]
+        public void End_Date(int term, String fin_year)
         {
             //Arrange
             int start_day = 15;
             int start_month = 7;
             int start_year = 2019;
-            int[] term_array = { 0, 1, 16, 17, 169, 170, 229, 365 };
 
             //Act
+            driver.FindElement(By.XPath($"//*[text()='{fin_year}']/input")).Click();
+
+            //*[text()="360 days"]
+
             SelectElement year_select = new SelectElement(driver.FindElement(By.Id("year")));
             year_select.SelectByText(start_year.ToString());
 
             SelectElement month_select = new SelectElement(driver.FindElement(By.Id("month")));
-            month_select.SelectByIndex(start_month-1);
+            month_select.SelectByIndex(start_month - 1);
 
             SelectElement day_select = new SelectElement(driver.FindElement(By.Id("day")));
             day_select.SelectByText(start_day.ToString());
-            
+
             //driver.FindElement(By.XPath("//*[@id='month']/option[" + start_month + "]")).Click();
 
             DateTime start_date = new DateTime(start_year, start_month, start_day);
 
-            String[] exp_end_date_array = new String[term_array.Length];
-            String[] act_end_date_array = new string[term_array.Length];
-
             IWebElement term_field = driver.FindElement(By.Id("term"));
 
-            for (int i = 0; i < term_array.Length; i++)
-            {
-                exp_end_date_array[i] = start_date.AddDays(term_array[i]).ToString("dd/MM/yyyy");
+            String exp_end_date = start_date.AddDays(term).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
 
-                term_field.Clear();
-                term_field.SendKeys(term_array[i].ToString());
+            term_field.Clear();
+            term_field.SendKeys(term.ToString());
 
-                act_end_date_array[i] = driver.FindElement(By.Id("endDate")).GetAttribute("value");
-            }
+            String act_end_date = driver.FindElement(By.Id("endDate")).GetAttribute("value");
 
             //Assert
-            Assert.AreEqual(exp_end_date_array, act_end_date_array);
+            Assert.AreEqual(exp_end_date, act_end_date);
         }
 
 
         [Test]
         public void Financial_Year_IsClicked_360()
         {
-            //Arrange
-            String radio_button_id = "d360";
-
-
             //Act
-            driver.FindElement(By.Id(radio_button_id)).Click();
+            driver.FindElement(By.XPath($"//*[text()='{fin_year_360}']/input")).Click();
 
 
             //Assert
-            Assert.AreEqual("true", driver.FindElement(By.Id(radio_button_id)).GetAttribute("checked"));
+            Assert.AreEqual("true", driver.FindElement(By.XPath($"//*[text()='{fin_year_360}']/input")).GetAttribute("checked"));
         }
 
 
         [Test]
         public void Financial_Year_IsClicked_365()
         {
-            //Arrange
-            String radio_button_id = "d365";
-
-
             //Act
-            driver.FindElement(By.Id(radio_button_id)).Click();
+            driver.FindElement(By.XPath($"//*[text()='{fin_year_365}']/input")).Click();
 
 
             //Assert
-            Assert.AreEqual("true", driver.FindElement(By.Id(radio_button_id)).GetAttribute("checked"));
+            Assert.AreEqual("true", driver.FindElement(By.XPath($"//*[text()='{fin_year_365}']/input")).GetAttribute("checked"));
         }
 
+
+        [Test]
+        public void Financial_Year_365_Selected_byDefault()
+        {
+            //Assert
+            Assert.AreEqual("true", driver.FindElement(By.XPath($"//*[text()='{fin_year_365}']/input")).GetAttribute("checked"));
+            Assert.AreEqual(null, driver.FindElement(By.XPath($"//*[text()='{fin_year_360}']/input")).GetAttribute("checked"));
+        }
+
+
+        [Test]
+        public void Financial_Year_OnlyOne_IsClicked()
+        {
+            //Act
+            driver.FindElement(By.XPath($"//*[text()='{fin_year_365}']/input")).Click();
+            driver.FindElement(By.XPath($"//*[text()='{fin_year_360}']/input")).Click();
+
+            //Assert
+            Assert.AreEqual(null, driver.FindElement(By.XPath($"//*[text()='{fin_year_365}']/input")).GetAttribute("checked"));
+            Assert.AreEqual("true", driver.FindElement(By.XPath($"//*[text()='{fin_year_360}']/input")).GetAttribute("checked"));
+        }
 
         [Test]
         public void Months_Order()
         {
             //Arrange
-            string[] exp_month_names = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-            
+            string[] exp_month_names = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+
 
             //Act
             SelectElement months_select = new SelectElement(driver.FindElement(By.Id("month")));
@@ -290,5 +311,27 @@ namespace web.test.tests
             Assert.AreEqual(exp_days_number, act_days_number);
         }
 
+
+        [TestCase("Deposit Amount: *")]
+        [TestCase("Rate of Interest: *")]
+        [TestCase("Investment Term: *")]
+        [TestCase("Start Date:")]
+        [TestCase("Financial Year:")]
+        [TestCase("* - mandatory fields")]
+        public void Field_Captions_td(String caption)
+        {
+            //Assert
+            Assert.True(driver.FindElement(By.XPath($"//table//tr/td[text() = '{caption}']")).Displayed);
+        }
+
+
+        [TestCase("Income:")]
+        [TestCase("Interest Earned:")]
+        [TestCase("End Date:")]
+        public void Field_Captions_th(String caption)
+        {
+            //Assert
+            Assert.True(driver.FindElement(By.XPath($"//table//tr/th[text() = '{caption}']")).Displayed);
+        }
     }
 }
