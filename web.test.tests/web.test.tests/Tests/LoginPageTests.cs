@@ -1,11 +1,11 @@
+using System;
 using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Linq;
+using web.test.tests.Pages;
 
-namespace web.test.tests
+namespace web.test.tests.Tests
 {
     public class LoginPageTests
     {
@@ -33,7 +33,7 @@ namespace web.test.tests
         public void Empty_Login_and_Empty_Password()
         {
             driver.FindElement(By.Id("loginBtn")).Click();
-            
+
             string error = driver.FindElement(By.Id("errorMessage")).Text;
             Assert.AreEqual("User name and password cannot be empty!", error);
         }
@@ -42,9 +42,9 @@ namespace web.test.tests
         public void Empty_Login_and_Wrong_Password()
         {
             driver.FindElement(By.Id("password")).SendKeys("wrong");
-            
+
             driver.FindElement(By.Id("loginBtn")).Click();
-           
+
             string error = driver.FindElement(By.Id("errorMessage")).Text;
             Assert.AreEqual("User name and password cannot be empty!", error);
         }
@@ -52,19 +52,19 @@ namespace web.test.tests
         [Test]
         public void Empty_Login_and_Correct_Password()
         {
-            driver.FindElement(By.Id("password")).SendKeys("newyork1");
-            
-            driver.FindElement(By.Id("loginBtn")).Click();
-           
-            string error = driver.FindElement(By.Id("errorMessage")).Text;
-            Assert.AreEqual("User name and password cannot be empty!", error);
+            LoginPage loginPage = new LoginPage(driver);
+
+            loginPage.PasswordField.SendKeys("newyork1");
+            loginPage.LoginButton.Click();
+
+            Assert.AreEqual("User name and password cannot be empty!", loginPage.ErrorMessage);
         }
 
         [Test]
         public void Wrong_Login_and_Empty_Password()
         {
             driver.FindElement(By.Id("login")).SendKeys("wrong");
-           
+
             driver.FindElement(By.Id("loginBtn")).Click();
 
             string error = driver.FindElement(By.Id("errorMessage")).Text;
@@ -77,7 +77,7 @@ namespace web.test.tests
             string wrongUserName = "wrong";
             driver.FindElement(By.Id("login")).SendKeys(wrongUserName);
             driver.FindElement(By.Id("password")).SendKeys("wrong");
-           
+
             driver.FindElement(By.Id("loginBtn")).Click();
 
             string error = driver.FindElement(By.Id("errorMessage")).Text;
@@ -87,13 +87,11 @@ namespace web.test.tests
         [Test]
         public void Wrong_Login_and_Correct_Password()
         {
-            driver.FindElement(By.Id("login")).SendKeys("wrong");
-            driver.FindElement(By.Id("password")).SendKeys("newyork1");
+            var loginPage = new LoginPage(driver);
 
-            driver.FindElement(By.Id("loginBtn")).Click();
+            loginPage.Login("wrong", "newyork1");
 
-            string error = driver.FindElement(By.Id("errorMessage")).Text;
-            Assert.AreEqual("Incorrect user name or password!", error);
+            Assert.AreEqual("Incorrect user name or password!", loginPage.ErrorMessage);
         }
 
         [Test]
@@ -101,7 +99,7 @@ namespace web.test.tests
         {
             driver.FindElement(By.Id("login")).SendKeys("test");
             driver.FindElement(By.Id("loginBtn")).Click();
-           
+
             string error = driver.FindElement(By.Id("errorMessage")).Text;
             Assert.AreEqual("User name and password cannot be empty!", error);
         }
@@ -123,7 +121,7 @@ namespace web.test.tests
             driver.FindElement(By.Id("login")).SendKeys("test");
             driver.FindElement(By.Id("password")).SendKeys("newyork1");
             driver.FindElement(By.Id("loginBtn")).Click();
-           
+
             Assert.IsTrue(driver.FindElement(By.Id("amount")).Displayed);
         }
 

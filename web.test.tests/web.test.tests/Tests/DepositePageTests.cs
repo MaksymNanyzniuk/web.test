@@ -6,7 +6,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 
-namespace web.test.tests
+namespace web.test.tests.Tests
 {
     class DepositePageTests
     {
