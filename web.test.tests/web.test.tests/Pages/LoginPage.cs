@@ -15,12 +15,13 @@ namespace web.test.tests.Pages
         {
             get
             {
-                return _driver.FindElement(By.Id("loginBtn"));
+                return _driver.FindElement(By.Id("login"));
             }
         }
 
         public IWebElement PasswordField => _driver.FindElement(By.Id("password"));
         public IWebElement LoginButton => _driver.FindElement(By.Id("loginBtn"));
+        public IWebElement RemindButton => _driver.FindElement(By.Id("remindBtn"));
 
         public void Login(string login, string password)
         {
@@ -28,12 +29,6 @@ namespace web.test.tests.Pages
             PasswordField.SendKeys(password);
             LoginButton.Click();
         }
-
         public string ErrorMessage => _driver.FindElement(By.Id("errorMessage")).Text;
-
-        //driver.FindElement(By.Id("password")).SendKeys("newyork1");
-
-        //driver.FindElement(By.Id("loginBtn")).Click();
-
     }
 }
