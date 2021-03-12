@@ -1,13 +1,11 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.Globalization;
+using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
 
-namespace web.test.tests
+namespace web.test.tests.Tests
 {
     class SettingsPageTests
     {
@@ -187,7 +185,7 @@ namespace web.test.tests
             }
 
             String exp_interest = Math.Round(amount * rate * term / 100 / year_length, 2).ToString("N", nfi);
-            
+
             String act_interest = driver.FindElement(By.Id("interest")).GetAttribute("value");
 
             //Assert
