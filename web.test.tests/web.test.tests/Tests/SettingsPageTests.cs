@@ -93,7 +93,7 @@ namespace web.test.tests.Tests
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
             DateTime start_date = new DateTime(start_year, start_month, start_day);
-            String exp_end_date = start_date.AddDays(term).ToString(date_format_DateTime);
+            String exp_end_date = start_date.AddDays(term).ToString(date_format_DateTime, CultureInfo.InvariantCulture);
 
             SelectElement year_select = new SelectElement(driver.FindElement(By.Id("year")));
             year_select.SelectByText(start_year.ToString());

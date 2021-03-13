@@ -1,9 +1,7 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace web.test.tests.Pages
 {
@@ -29,7 +27,7 @@ namespace web.test.tests.Pages
         public void ClickSave()
         {
             _driver.FindElement(By.Id("save")).Click();
-            IAlert alert =_driver.SwitchTo().Alert();
+            IAlert alert = _driver.SwitchTo().Alert();
             Assert.AreEqual("Changes are saved!", alert.Text);
             alert.Accept();
         }

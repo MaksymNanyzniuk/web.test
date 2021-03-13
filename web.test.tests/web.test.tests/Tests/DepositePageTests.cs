@@ -84,15 +84,15 @@ namespace web.test.tests.Tests
                 for (int i = 0; i < amount_array.Length; i++)
                 {
                     driver.FindElement(By.Id("amount")).Clear();
-                    driver.FindElement(By.Id("amount")).SendKeys(amount_array[i].ToString());
+                    driver.FindElement(By.Id("amount")).SendKeys(amount_array[i].ToString(CultureInfo.InvariantCulture));
                     for (int j = 0; j < rate_array.Length; j++)
                     {
                         driver.FindElement(By.Id("percent")).Clear();
-                        driver.FindElement(By.Id("percent")).SendKeys(rate_array[j].ToString());
+                        driver.FindElement(By.Id("percent")).SendKeys(rate_array[j].ToString(CultureInfo.InvariantCulture));
                         for (int k = 0; k < term_array.Length; k++)
                         {
                             driver.FindElement(By.Id("term")).Clear();
-                            driver.FindElement(By.Id("term")).SendKeys(term_array[k].ToString());
+                            driver.FindElement(By.Id("term")).SendKeys(term_array[k].ToString(CultureInfo.InvariantCulture));
                             if (amount_array[i] > 100000)
                             {
                                 exp_interest = 0;
@@ -112,8 +112,8 @@ namespace web.test.tests.Tests
                             exp_interest_array[n] = exp_interest;
                             exp_income_array[n] = exp_income;
 
-                            act_interest = Convert.ToDecimal(driver.FindElement(By.Id("interest")).GetAttribute("value"));
-                            act_income = Convert.ToDecimal(driver.FindElement(By.Id("income")).GetAttribute("value"));
+                            act_interest = Convert.ToDecimal(driver.FindElement(By.Id("interest")).GetAttribute("value"), CultureInfo.InvariantCulture);
+                            act_income = Convert.ToDecimal(driver.FindElement(By.Id("income")).GetAttribute("value"), CultureInfo.InvariantCulture);
 
                             act_interest_array[n] = act_interest;
                             act_income_array[n] = act_income;

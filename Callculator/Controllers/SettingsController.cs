@@ -18,11 +18,12 @@ namespace Callculator.Controllers
         [HttpGet]
         public ActionResult Date(string date)
         {
+            var dateTime = DateTime.ParseExact(date, "dd/MM/yyyy", CultureInfo.InvariantCulture);
             var format = System.IO.File.Exists(settings)
                 ? System.IO.File.ReadAllText(settings).Split(';')[0]
-                : "dd/MMM/yyyy";
+                : "dd/MM/yyyy";
 
-            return Json(DateTime.Parse(date).ToString(format, CultureInfo.InvariantCulture), JsonRequestBehavior.AllowGet);
+            return Json(dateTime.ToString(format, CultureInfo.InvariantCulture), JsonRequestBehavior.AllowGet);
         }
 
         [HttpGet]
