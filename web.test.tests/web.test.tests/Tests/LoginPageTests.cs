@@ -55,10 +55,7 @@ namespace web.test.tests.Tests
         public void Correct_Login_and_Correct_Password()
         {
             LoginPage loginPage = new LoginPage(driver);
-            loginPage.LoginField.SendKeys("test");
-            loginPage.PasswordField.SendKeys("newyork1");
-            loginPage.LoginButton.Click();
-
+            loginPage.Login("test", "newyork1");
             Assert.IsTrue(driver.FindElement(By.Id("amount")).Displayed);
         }
 
