@@ -4,7 +4,9 @@ using System.Globalization;
 using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
+using web.test.tests.Pages;
 
 namespace web.test.tests.Tests
 {
@@ -93,6 +95,10 @@ namespace web.test.tests.Tests
                         {
                             driver.FindElement(By.Id("term")).Clear();
                             driver.FindElement(By.Id("term")).SendKeys(term_array[k].ToString(CultureInfo.InvariantCulture));
+
+                            Actions builder = new Actions(driver);
+                            builder.SendKeys(Keys.Enter);
+
                             if (amount_array[i] > 100000)
                             {
                                 exp_interest = 0;
@@ -121,6 +127,9 @@ namespace web.test.tests.Tests
                             Console.WriteLine("n=" + n + ". amount=" + amount_array[i] + "; rate=" + rate_array[j] + "; term=" + term_array[k] + ";");
                             Console.WriteLine("exp_interest=" + exp_interest + "; act_interest=" + act_interest + "; exp_income= " + exp_income + "; act_income= " + act_income);
 
+                            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.TextToBePresentInElementValue(By.Id("interest"), exp_interest.ToString()));
+                            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.TextToBePresentInElementValue(By.Id("income"), exp_income.ToString()));
+
                             n++;
 
                             //Assert
@@ -145,7 +154,7 @@ namespace web.test.tests.Tests
         [TestCase(229, fin_year_360)]
         [TestCase(360, fin_year_360)]
         [TestCase(365, fin_year_365)]
-        public void End_Date(int term, String fin_year)
+        public void End_Date(int term, String fin_year) //Question:Result value appearing?
         {
             //Arrange
             int start_day = 15;
@@ -153,9 +162,15 @@ namespace web.test.tests.Tests
             int start_year = 2019;
 
             //Act
-            driver.FindElement(By.XPath($"//*[text()='{fin_year}']/input")).Click();
+            driver.FindElement(By.XPath("//div[text()='Settings']")).Click();
+            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.XPath("//div[text()='Logout']")));
+            SettingsPage settingsPage = new SettingsPage(driver);
+            DateTime start_date = new DateTime(start_year, start_month, start_day);
+            String exp_end_date = start_date.AddDays(term).ToString(settingsPage.GetSelectedDateFormatText(), CultureInfo.InvariantCulture);
+            settingsPage.CancelBtn.Click();
+            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
-            //*[text()="360 days"]
+            driver.FindElement(By.XPath($"//*[text()='{fin_year}']/input")).Click();
 
             SelectElement year_select = new SelectElement(driver.FindElement(By.Id("year")));
             year_select.SelectByText(start_year.ToString());
@@ -166,21 +181,16 @@ namespace web.test.tests.Tests
             SelectElement day_select = new SelectElement(driver.FindElement(By.Id("day")));
             day_select.SelectByText(start_day.ToString());
 
-            //driver.FindElement(By.XPath("//*[@id='month']/option[" + start_month + "]")).Click();
-
-            DateTime start_date = new DateTime(start_year, start_month, start_day);
-
             IWebElement term_field = driver.FindElement(By.Id("term"));
-
-            String exp_end_date = start_date.AddDays(term).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
-
             term_field.Clear();
             term_field.SendKeys(term.ToString());
 
             String act_end_date = driver.FindElement(By.Id("endDate")).GetAttribute("value");
 
+            Console.WriteLine($"ER: {exp_end_date}; AR: {act_end_date}");
+
             //Assert
-            Assert.AreEqual(exp_end_date, act_end_date);
+            Assert.AreEqual(true, new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.TextToBePresentInElementValue(By.Id("endDate"), exp_end_date)));
         }
 
 

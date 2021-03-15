@@ -16,22 +16,28 @@ namespace web.test.tests.Pages
 
         const String XPathNumberFormatSelect = "//th[text()='Number format:']/following-sibling::td/select";
         const String XPathCurrencySelect = "//th[text()='Default currency:']/following-sibling::td/select";
+        const String XPathDateFormatSelect = "//th[text()='Date format:']/following-sibling::td/select";
 
         public IWebElement CancelBtn => _driver.FindElement(By.Id("cancel"));
         public IWebElement Logout => _driver.FindElement(By.XPath("//div[text()='Logout']"));
 
-        public SelectElement DateFormatSelect => new SelectElement(_driver.FindElement(By.XPath("//th[text()='Date format:']/following-sibling::td/select")));
+        public SelectElement DateFormatSelect => new SelectElement(_driver.FindElement(By.XPath(XPathDateFormatSelect)));
         public SelectElement NumberFormatSelect => new SelectElement(_driver.FindElement(By.XPath(XPathNumberFormatSelect)));
         public SelectElement DefaultCurrencySelect => new SelectElement(_driver.FindElement(By.XPath(XPathCurrencySelect)));
 
         public void ClickSave()
         {
             _driver.FindElement(By.Id("save")).Click();
+            new WebDriverWait(_driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.AlertIsPresent());
             IAlert alert = _driver.SwitchTo().Alert();
             Assert.AreEqual("Changes are saved!", alert.Text);
             alert.Accept();
         }
 
+        public String GetSelectedDateFormatText()
+        {
+            return _driver.FindElement(By.XPath(XPathDateFormatSelect)).GetAttribute("value");
+        }
         public String GetSelectedNumberFormatText()
         {
             return _driver.FindElement(By.XPath(XPathNumberFormatSelect)).GetAttribute("value");
