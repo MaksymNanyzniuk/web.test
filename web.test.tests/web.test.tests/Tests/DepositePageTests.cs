@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.Threading;
 using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -20,15 +22,11 @@ namespace web.test.tests.Tests
         public void Setup()
         {
             driver = new ChromeDriver();
-
             driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(30);
             driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
-
             driver.Url = "http://localhost:64177/Login";
 
-            driver.FindElement(By.Id("login")).SendKeys("test");
-            driver.FindElement(By.Id("password")).SendKeys("newyork1");
-            driver.FindElement(By.Id("loginBtn")).Click();
+            new LoginPage(driver).Login("test", "newyork1");
 
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
         }
@@ -140,16 +138,16 @@ namespace web.test.tests.Tests
         }
 
 
-        [TestCase(0, fin_year_360)]
-        [TestCase(1, fin_year_360)]
-        [TestCase(16, fin_year_360)]
-        [TestCase(17, fin_year_360)]
-        [TestCase(169, fin_year_360)]
-        [TestCase(170, fin_year_360)]
-        [TestCase(229, fin_year_360)]
-        [TestCase(360, fin_year_360)]
-        [TestCase(365, fin_year_365)]
-        public void End_Date(int term, String fin_year)
+        [TestCase(0, 360)]
+        [TestCase(1, 360)]
+        [TestCase(16, 360)]
+        [TestCase(17, 360)]
+        [TestCase(169, 360)]
+        [TestCase(170, 360)]
+        [TestCase(229, 360)]
+        [TestCase(360, 360)]
+        [TestCase(365, 365)]
+        public void End_Date(int term, int fin_year)
         {
             //Arrange
             int start_day = 15;
@@ -157,34 +155,33 @@ namespace web.test.tests.Tests
             int start_year = 2019;
 
             //Act
-            driver.FindElement(By.XPath("//div[text()='Settings']")).Click();
-            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.XPath("//div[text()='Logout']")));
-            SettingsPage settingsPage = new SettingsPage(driver);
+            DepositPage depositPage = new DepositPage(driver);
+            depositPage.OpenSettingsPage();
 
-            DateTime start_date = new DateTime(start_year, start_month, start_day);
-            String exp_end_date = start_date.AddDays(term).ToString(settingsPage.SelectedDateFormat, CultureInfo.InvariantCulture);
-            
+            SettingsPage settingsPage = new SettingsPage(driver);
+            String exp_end_date = new DateTime(start_year, start_month, start_day).AddDays(term).ToString(settingsPage.SelectedDateFormat, CultureInfo.InvariantCulture);
             settingsPage.CancelBtn.Click();
 
-            driver.FindElement(By.XPath($"//*[text()='{fin_year}']/input")).Click();
+            if (fin_year == 360)
+            { 
+                depositPage.FinYear360.Click(); 
+            }
+            else if (fin_year == 365)
+            {
+                depositPage.FinYear365.Click();
+            }
+            else 
+            {
+                Assert.AreEqual("", "Inproper fin_year value in input data");
+            }
 
-            SelectElement year_select = new SelectElement(driver.FindElement(By.Id("year")));
-            year_select.SelectByText(start_year.ToString());
-
-            SelectElement month_select = new SelectElement(driver.FindElement(By.Id("month")));
-            month_select.SelectByIndex(start_month - 1);
-
-            SelectElement day_select = new SelectElement(driver.FindElement(By.Id("day")));
-            day_select.SelectByText(start_day.ToString());
-
-            IWebElement term_field = driver.FindElement(By.Id("term"));
-            term_field.Clear();
-            term_field.SendKeys(term.ToString());
-
-            String act_end_date = driver.FindElement(By.Id("endDate")).GetAttribute("value");
+            depositPage.SelectStartYear.SelectByText(start_year.ToString());
+            depositPage.SelectStartMonth.SelectByIndex(start_month-1);
+            depositPage.SelectStartDay.SelectByText(start_day.ToString());
+            depositPage.SetTerm(term);
 
             //Assert
-            Assert.AreEqual(true, new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.TextToBePresentInElementValue(By.Id("endDate"), exp_end_date)));
+            Assert.AreEqual(exp_end_date, depositPage.EndDate);
         }
 
 
@@ -192,11 +189,11 @@ namespace web.test.tests.Tests
         public void Financial_Year_IsClicked_360()
         {
             //Act
-            driver.FindElement(By.XPath($"//*[text()='{fin_year_360}']/input")).Click();
-
+            DepositPage depositPage = new DepositPage(driver);
+            depositPage.FinYear360.Click();
 
             //Assert
-            Assert.AreEqual("true", driver.FindElement(By.XPath($"//*[text()='{fin_year_360}']/input")).GetAttribute("checked"));
+            Assert.AreEqual("true", depositPage.FinYear360.GetAttribute("checked"));
         }
 
 
@@ -204,20 +201,23 @@ namespace web.test.tests.Tests
         public void Financial_Year_IsClicked_365()
         {
             //Act
-            driver.FindElement(By.XPath($"//*[text()='{fin_year_365}']/input")).Click();
-
+            DepositPage depositPage = new DepositPage(driver);
+            depositPage.FinYear365.Click();
 
             //Assert
-            Assert.AreEqual("true", driver.FindElement(By.XPath($"//*[text()='{fin_year_365}']/input")).GetAttribute("checked"));
+            Assert.AreEqual("true", depositPage.FinYear365.GetAttribute("checked"));
         }
 
 
         [Test]
         public void Financial_Year_365_Selected_byDefault()
         {
+            //Act
+            DepositPage depositPage = new DepositPage(driver);
+            
             //Assert
-            Assert.AreEqual("true", driver.FindElement(By.XPath($"//*[text()='{fin_year_365}']/input")).GetAttribute("checked"));
-            Assert.AreEqual(null, driver.FindElement(By.XPath($"//*[text()='{fin_year_360}']/input")).GetAttribute("checked"));
+            Assert.AreEqual("true", depositPage.FinYear365.GetAttribute("checked"));
+            Assert.AreEqual(null, depositPage.FinYear360.GetAttribute("checked"));
         }
 
 
@@ -225,12 +225,13 @@ namespace web.test.tests.Tests
         public void Financial_Year_OnlyOne_IsClicked()
         {
             //Act
-            driver.FindElement(By.XPath($"//*[text()='{fin_year_365}']/input")).Click();
-            driver.FindElement(By.XPath($"//*[text()='{fin_year_360}']/input")).Click();
+            DepositPage depositPage = new DepositPage(driver);
+            depositPage.FinYear365.Click();
+            depositPage.FinYear360.Click();
 
             //Assert
-            Assert.AreEqual(null, driver.FindElement(By.XPath($"//*[text()='{fin_year_365}']/input")).GetAttribute("checked"));
-            Assert.AreEqual("true", driver.FindElement(By.XPath($"//*[text()='{fin_year_360}']/input")).GetAttribute("checked"));
+            Assert.AreEqual(null, depositPage.FinYear365.GetAttribute("checked"));
+            Assert.AreEqual("true", depositPage.FinYear360.GetAttribute("checked"));
         }
 
         [Test]
@@ -239,75 +240,42 @@ namespace web.test.tests.Tests
             //Arrange
             string[] exp_month_names = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
 
-
             //Act
-            SelectElement months_select = new SelectElement(driver.FindElement(By.Id("month")));
-            IList<IWebElement> months_list = months_select.Options;
-
+            DepositPage depositPage = new DepositPage(driver);
             int i = 0;
-            string[] act_months_names = new string[months_list.Count];
-            foreach (IWebElement el in months_list)
+            string[] act_months_names = new string[exp_month_names.Length];
+            foreach (IWebElement el in depositPage.SelectStartMonth.Options)
             {
                 act_months_names[i] = el.Text;
                 i++;
             }
-
 
             //Assert
             Assert.AreEqual(exp_month_names, act_months_names);
         }
 
 
-        [Test]
-        public void Days_per_Month_common_year()
+        [TestCase(2011)]
+        [TestCase(2012)]
+        public void Days_per_Month(int year)
         {
             //Arrange
-            int year = 2010;
-            int[] exp_days_number = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
+            int[] exp_days_number = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }; ;
+            if (year % 4 == 0) exp_days_number[1] = 29;
+            
             //Act
-            SelectElement year_select = new SelectElement(driver.FindElement(By.Id("year")));
-            year_select.SelectByText(year.ToString());
+            DepositPage depositPage = new DepositPage(driver);
+            depositPage.SelectStartYear.SelectByText(year.ToString());
 
             SelectElement months_select = new SelectElement(driver.FindElement(By.Id("month")));
-            IList<IWebElement> months_list = months_select.Options;
+            IList<IWebElement> months_list = depositPage.SelectStartMonth.Options;
 
             int i = 0;
             int[] act_days_number = new int[12];
             foreach (IWebElement el in months_list)
             {
                 el.Click();
-                SelectElement day = new SelectElement(driver.FindElement(By.Id("day")));
-                act_days_number[i] = day.Options.Count;
-                i++;
-            }
-
-            //Assert
-            Assert.AreEqual(exp_days_number, act_days_number);
-        }
-
-
-        [Test]
-        public void Days_per_Month_leap_year()
-        {
-            //Arrange
-            int year = 2012;
-            int[] exp_days_number = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
-            //Act
-            SelectElement year_select = new SelectElement(driver.FindElement(By.Id("year")));
-            year_select.SelectByText(year.ToString());
-
-            SelectElement months_select = new SelectElement(driver.FindElement(By.Id("month")));
-            IList<IWebElement> months_list = months_select.Options;
-
-            int i = 0;
-            int[] act_days_number = new int[12];
-            foreach (IWebElement el in months_list)
-            {
-                el.Click();
-                SelectElement day = new SelectElement(driver.FindElement(By.Id("day")));
-                act_days_number[i] = day.Options.Count;
+                act_days_number[i] = depositPage.SelectStartDay.Options.Count;
                 i++;
             }
 

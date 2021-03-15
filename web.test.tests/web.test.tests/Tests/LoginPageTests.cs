@@ -56,7 +56,7 @@ namespace web.test.tests.Tests
         {
             LoginPage loginPage = new LoginPage(driver);
             loginPage.Login("test", "newyork1");
-            Assert.IsTrue(driver.FindElement(By.Id("amount")).Displayed);
+            Assert.IsTrue(new DepositPage(driver).AmountField.Displayed);
         }
 
         [Test]

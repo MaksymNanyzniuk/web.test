@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Threading;
 using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -22,12 +23,11 @@ namespace web.test.tests.Tests
 
             driver.Url = "http://localhost:64177/Login";
 
-            LoginPage loginPage = new LoginPage(driver);
-            loginPage.Login("test", "newyork1");
+            new LoginPage(driver).Login("test", "newyork1");
 
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
-            driver.FindElement(By.XPath("//div[text()='Settings']")).Click();
+            new DepositPage(driver).Settings.Click();
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.XPath("//div[text()='Logout']")));
         }
 
@@ -41,34 +41,28 @@ namespace web.test.tests.Tests
         [Test]
         public void CancelBtn_Closes_Settings()
         {
-            SettingsPage settingsPage = new SettingsPage(driver);
-            settingsPage.CancelBtn.Click();
+            new SettingsPage(driver).CancelBtn.Click();
 
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
-            Assert.IsTrue(driver.FindElement(By.Id("amount")).Displayed);
+            Assert.IsTrue(new DepositPage(driver).AmountField.Displayed);
         }
 
 
         [Test]
         public void SaveBtn_Closes_Settings()
         {
-            SettingsPage settingsPage = new SettingsPage(driver);
-            settingsPage.Save();
+            new SettingsPage(driver).Save();
 
-            Assert.IsTrue(driver.FindElement(By.Id("amount")).Displayed);
+            Assert.IsTrue(new DepositPage(driver).AmountField.Displayed);
         }
 
 
         [Test]
         public void Logout_Exits()
         {
-            SettingsPage settingsPage = new SettingsPage(driver);
-            settingsPage.Logout.Click();
-
-            LoginPage loginPage = new LoginPage(driver);
-            
-            Assert.IsTrue(loginPage.RemindButton.Displayed);
+            new SettingsPage(driver).Logout.Click();
+            Assert.IsTrue(new LoginPage(driver).RemindButton.Displayed);
         }
 
 
@@ -85,31 +79,21 @@ namespace web.test.tests.Tests
             int term = 12;
 
             //Act
-            DateTime start_date = new DateTime(start_year, start_month, start_day);
-
             SettingsPage settingsPage = new SettingsPage(driver);
             settingsPage.SelectDateFormat.SelectByIndex(date_format_index);
-            String exp_end_date = start_date.AddDays(term).ToString(settingsPage.SelectedDateFormat, CultureInfo.InvariantCulture);
+            String exp_end_date = new DateTime(start_year, start_month, start_day).AddDays(term).ToString(settingsPage.SelectedDateFormat, CultureInfo.InvariantCulture);
 
             settingsPage.Save();
 
-            SelectElement year_select = new SelectElement(driver.FindElement(By.Id("year")));
-            year_select.SelectByText(start_year.ToString());
-
-            SelectElement month_select = new SelectElement(driver.FindElement(By.Id("month")));
-            month_select.SelectByIndex(start_month - 1);
-
-            SelectElement day_select = new SelectElement(driver.FindElement(By.Id("day")));
-            day_select.SelectByText(start_day.ToString());
-
-            IWebElement term_field = driver.FindElement(By.Id("term"));
-            term_field.Clear();
-            term_field.SendKeys(term.ToString());
-
-            String act_end_date = driver.FindElement(By.Id("endDate")).GetAttribute("value");
+            DepositPage depositPage = new DepositPage(driver);
+            depositPage.SelectStartYear.SelectByText(start_year.ToString());
+            depositPage.SelectStartMonth.SelectByIndex(start_month - 1);
+            depositPage.SelectStartDay.SelectByText(start_day.ToString());
+            depositPage.TermField.Clear();
+            depositPage.TermField.SendKeys(term.ToString());
 
             //Assert
-            Assert.AreEqual(exp_end_date, act_end_date);
+            Assert.AreEqual(exp_end_date, depositPage.EndDate);
         }
 
 
@@ -125,7 +109,6 @@ namespace web.test.tests.Tests
             int term = 211;
 
             String financial_year = "365 days";
-            int year_length = 365;
 
             //Act
             SettingsPage settingsPage = new SettingsPage(driver);
@@ -134,16 +117,15 @@ namespace web.test.tests.Tests
 
             settingsPage.Save();
 
-            driver.FindElement(By.XPath($"//td[text()='{financial_year}']/input")).Click();
-
-            driver.FindElement(By.Id("amount")).Clear();
-            driver.FindElement(By.Id("amount")).SendKeys(amount.ToString());
-
-            driver.FindElement(By.Id("percent")).Clear();
-            driver.FindElement(By.Id("percent")).SendKeys(rate.ToString());
-
-            driver.FindElement(By.Id("term")).Clear();
-            driver.FindElement(By.Id("term")).SendKeys(term.ToString());
+            DepositPage depositPage = new DepositPage(driver);
+            depositPage.FinYear365.Click();
+            int year_length = 365;
+            depositPage.AmountField.Clear();
+            depositPage.AmountField.SendKeys(amount.ToString());
+            depositPage.RateField.Clear();
+            depositPage.RateField.SendKeys(rate.ToString());
+            depositPage.TermField.Clear();
+            depositPage.TermField.SendKeys(term.ToString());
 
             NumberFormatInfo nfi = new CultureInfo("en-US", true).NumberFormat;
             switch (selected_number_format_setting)
@@ -168,10 +150,8 @@ namespace web.test.tests.Tests
 
             String exp_interest = Math.Round(amount * rate * term / 100 / year_length, 2).ToString("N", nfi);
 
-            String act_interest = driver.FindElement(By.Id("interest")).GetAttribute("value");
-
             //Assert
-            Assert.AreEqual(exp_interest, act_interest);
+            Assert.AreEqual(exp_interest, depositPage.InterestStr);
         }
 
 
@@ -204,10 +184,8 @@ namespace web.test.tests.Tests
                     break;
             }
 
-            String act_currency_sign = driver.FindElement(By.Id("currency")).Text;
-
             //Assert
-            Assert.AreEqual(exp_currency_sign, act_currency_sign);
+            Assert.AreEqual(exp_currency_sign, new DepositPage(driver).CurrencySign);
         }
 
 
