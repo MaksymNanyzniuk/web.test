@@ -34,15 +34,8 @@ namespace web.test.tests.Pages
             new WebDriverWait(_driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
         }
 
-public string SelectedDateFormat => SelectDateFormat.SelectedOption.Text;
-        public String GetSelectedNumberFormatText()
-        {
-            return _driver.FindElement(By.XPath(XPathNumberFormatSelect)).GetAttribute("value");
-        }
-
-        public String GetSelectedCurrencyText()
-        {
-            return _driver.FindElement(By.XPath(XPathCurrencySelect)).GetAttribute("value");
-        }
+        public String SelectedDateFormat => SelectDateFormat.SelectedOption.Text;
+        public String SelectedNumberFormat => SelectNumberFormat.SelectedOption.Text;
+        public String SelectedCurrency => SelectDefaultCurrency.SelectedOption.Text;
     }
 }

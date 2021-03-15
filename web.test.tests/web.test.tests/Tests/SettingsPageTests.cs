@@ -54,7 +54,7 @@ namespace web.test.tests.Tests
         public void SaveBtn_Closes_Settings()
         {
             SettingsPage settingsPage = new SettingsPage(driver);
-            settingsPage.ClickSave();
+            settingsPage.Save();
 
             Assert.IsTrue(driver.FindElement(By.Id("amount")).Displayed);
         }
@@ -89,9 +89,9 @@ namespace web.test.tests.Tests
 
             SettingsPage settingsPage = new SettingsPage(driver);
             settingsPage.SelectDateFormat.SelectByIndex(date_format_index);
-            String exp_end_date = start_date.AddDays(term).ToString(settingsPage.GetSelectedDateFormatText(), CultureInfo.InvariantCulture);
+            String exp_end_date = start_date.AddDays(term).ToString(settingsPage.SelectedDateFormat, CultureInfo.InvariantCulture);
 
-            settingsPage.ClickSave();
+            settingsPage.Save();
 
             SelectElement year_select = new SelectElement(driver.FindElement(By.Id("year")));
             year_select.SelectByText(start_year.ToString());
@@ -130,9 +130,9 @@ namespace web.test.tests.Tests
             //Act
             SettingsPage settingsPage = new SettingsPage(driver);
             settingsPage.SelectNumberFormat.SelectByIndex(number_format_index);
-            String selected_number_format_setting = settingsPage.GetSelectedNumberFormatText();
+            String selected_number_format_setting = settingsPage.SelectedNumberFormat;
 
-            settingsPage.ClickSave();
+            settingsPage.Save();
 
             driver.FindElement(By.XPath($"//td[text()='{financial_year}']/input")).Click();
 
@@ -183,9 +183,9 @@ namespace web.test.tests.Tests
             //Act
             SettingsPage settingsPage = new SettingsPage(driver);
             settingsPage.SelectDefaultCurrency.SelectByIndex(default_currency_index);
-            String selected_currency_setting = settingsPage.GetSelectedCurrencyText();
+            String selected_currency_setting = settingsPage.SelectedCurrency;
 
-            settingsPage.ClickSave();
+            settingsPage.Save();
 
             String exp_currency_sign = "";
             switch (selected_currency_setting)

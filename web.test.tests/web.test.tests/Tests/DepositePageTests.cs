@@ -162,7 +162,7 @@ namespace web.test.tests.Tests
             SettingsPage settingsPage = new SettingsPage(driver);
 
             DateTime start_date = new DateTime(start_year, start_month, start_day);
-            String exp_end_date = start_date.AddDays(term).ToString(settingsPage.GetSelectedDateFormatText(), CultureInfo.InvariantCulture);
+            String exp_end_date = start_date.AddDays(term).ToString(settingsPage.SelectedDateFormat, CultureInfo.InvariantCulture);
             
             settingsPage.CancelBtn.Click();
 
