@@ -25,7 +25,7 @@ namespace web.test.tests.Pages
         public SelectElement SelectNumberFormat => new SelectElement(_driver.FindElement(By.XPath(XPathNumberFormatSelect)));
         public SelectElement SelectDefaultCurrency => new SelectElement(_driver.FindElement(By.XPath(XPathCurrencySelect)));
 
-        public void ClickSave()
+        public void Save()
         {
             _driver.FindElement(By.Id("save")).Click();
             new WebDriverWait(_driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.AlertIsPresent());
