@@ -35,10 +35,7 @@ namespace web.test.tests.Pages
             new WebDriverWait(_driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
         }
 
-        public String GetSelectedDateFormatText()
-        {
-            return _driver.FindElement(By.XPath(XPathDateFormatSelect)).GetAttribute("value");
-        }
+public string SelectedDateFormat => SelectDateFormat.SelectedOption.Text;
         public String GetSelectedNumberFormatText()
         {
             return _driver.FindElement(By.XPath(XPathNumberFormatSelect)).GetAttribute("value");
