@@ -162,10 +162,11 @@ namespace web.test.tests.Tests
             driver.FindElement(By.XPath("//div[text()='Settings']")).Click();
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.XPath("//div[text()='Logout']")));
             SettingsPage settingsPage = new SettingsPage(driver);
+
             DateTime start_date = new DateTime(start_year, start_month, start_day);
             String exp_end_date = start_date.AddDays(term).ToString(settingsPage.GetSelectedDateFormatText(), CultureInfo.InvariantCulture);
+            
             settingsPage.CancelBtn.Click();
-            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
             driver.FindElement(By.XPath($"//*[text()='{fin_year}']/input")).Click();
 

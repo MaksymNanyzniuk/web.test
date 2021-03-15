@@ -21,9 +21,9 @@ namespace web.test.tests.Pages
         public IWebElement CancelBtn => _driver.FindElement(By.Id("cancel"));
         public IWebElement Logout => _driver.FindElement(By.XPath("//div[text()='Logout']"));
 
-        public SelectElement DateFormatSelect => new SelectElement(_driver.FindElement(By.XPath(XPathDateFormatSelect)));
-        public SelectElement NumberFormatSelect => new SelectElement(_driver.FindElement(By.XPath(XPathNumberFormatSelect)));
-        public SelectElement DefaultCurrencySelect => new SelectElement(_driver.FindElement(By.XPath(XPathCurrencySelect)));
+        public SelectElement SelectDateFormat => new SelectElement(_driver.FindElement(By.XPath(XPathDateFormatSelect)));
+        public SelectElement SelectNumberFormat => new SelectElement(_driver.FindElement(By.XPath(XPathNumberFormatSelect)));
+        public SelectElement SelectDefaultCurrency => new SelectElement(_driver.FindElement(By.XPath(XPathCurrencySelect)));
 
         public void ClickSave()
         {
@@ -32,6 +32,7 @@ namespace web.test.tests.Pages
             IAlert alert = _driver.SwitchTo().Alert();
             Assert.AreEqual("Changes are saved!", alert.Text);
             alert.Accept();
+            new WebDriverWait(_driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
         }
 
         public String GetSelectedDateFormatText()

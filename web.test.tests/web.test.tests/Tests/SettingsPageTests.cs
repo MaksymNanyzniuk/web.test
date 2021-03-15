@@ -56,8 +56,6 @@ namespace web.test.tests.Tests
             SettingsPage settingsPage = new SettingsPage(driver);
             settingsPage.ClickSave();
 
-            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
-
             Assert.IsTrue(driver.FindElement(By.Id("amount")).Displayed);
         }
 
@@ -90,11 +88,10 @@ namespace web.test.tests.Tests
             DateTime start_date = new DateTime(start_year, start_month, start_day);
 
             SettingsPage settingsPage = new SettingsPage(driver);
-            settingsPage.DateFormatSelect.SelectByIndex(date_format_index);
+            settingsPage.SelectDateFormat.SelectByIndex(date_format_index);
             String exp_end_date = start_date.AddDays(term).ToString(settingsPage.GetSelectedDateFormatText(), CultureInfo.InvariantCulture);
 
             settingsPage.ClickSave();
-            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
             SelectElement year_select = new SelectElement(driver.FindElement(By.Id("year")));
             year_select.SelectByText(start_year.ToString());
@@ -132,11 +129,10 @@ namespace web.test.tests.Tests
 
             //Act
             SettingsPage settingsPage = new SettingsPage(driver);
-            settingsPage.NumberFormatSelect.SelectByIndex(number_format_index);
+            settingsPage.SelectNumberFormat.SelectByIndex(number_format_index);
             String selected_number_format_setting = settingsPage.GetSelectedNumberFormatText();
 
             settingsPage.ClickSave();
-            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
             driver.FindElement(By.XPath($"//td[text()='{financial_year}']/input")).Click();
 
@@ -186,11 +182,10 @@ namespace web.test.tests.Tests
         {
             //Act
             SettingsPage settingsPage = new SettingsPage(driver);
-            settingsPage.DefaultCurrencySelect.SelectByIndex(default_currency_index);
+            settingsPage.SelectDefaultCurrency.SelectByIndex(default_currency_index);
             String selected_currency_setting = settingsPage.GetSelectedCurrencyText();
 
             settingsPage.ClickSave();
-            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
             String exp_currency_sign = "";
             switch (selected_currency_setting)
