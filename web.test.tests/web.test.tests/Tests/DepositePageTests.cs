@@ -96,9 +96,6 @@ namespace web.test.tests.Tests
                             driver.FindElement(By.Id("term")).Clear();
                             driver.FindElement(By.Id("term")).SendKeys(term_array[k].ToString(CultureInfo.InvariantCulture));
 
-                            Actions builder = new Actions(driver);
-                            builder.SendKeys(Keys.Enter);
-
                             if (amount_array[i] > 100000)
                             {
                                 exp_interest = 0;
