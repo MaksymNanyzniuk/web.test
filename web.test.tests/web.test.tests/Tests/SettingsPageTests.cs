@@ -162,7 +162,7 @@ namespace web.test.tests.Tests
                     nfi.NumberDecimalSeparator = ",";
                     break;
                 default:
-                    Console.WriteLine("Unexpected number format selected in the dropdown.");
+                    Assert.AreEqual("", "Unexpected number format selected in the dropdown.");
                     break;
             }
 
@@ -200,7 +200,7 @@ namespace web.test.tests.Tests
                     exp_currency_sign = "£";
                     break;
                 default:
-                    Console.WriteLine("Unexpected currency selected in the dropdown.");
+                    Assert.AreEqual("", "Unexpected currency selected in the dropdown.");
                     break;
             }
 

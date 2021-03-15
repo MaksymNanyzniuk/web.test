@@ -53,6 +53,7 @@ namespace web.test.tests.Tests
             year_map.Add(fin_year_365, 365);
 
             //Act
+          
             int n = 0;
 
             String financial_year_Id;
@@ -124,9 +125,6 @@ namespace web.test.tests.Tests
                             Console.WriteLine("n=" + n + ". amount=" + amount_array[i] + "; rate=" + rate_array[j] + "; term=" + term_array[k] + ";");
                             Console.WriteLine("exp_interest=" + exp_interest + "; act_interest=" + act_interest + "; exp_income= " + exp_income + "; act_income= " + act_income);
 
-                            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.TextToBePresentInElementValue(By.Id("interest"), exp_interest.ToString()));
-                            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.TextToBePresentInElementValue(By.Id("income"), exp_income.ToString()));
-
                             n++;
 
                             //Assert
@@ -151,7 +149,7 @@ namespace web.test.tests.Tests
         [TestCase(229, fin_year_360)]
         [TestCase(360, fin_year_360)]
         [TestCase(365, fin_year_365)]
-        public void End_Date(int term, String fin_year) //Question:Result value appearing?
+        public void End_Date(int term, String fin_year)
         {
             //Arrange
             int start_day = 15;
@@ -184,8 +182,6 @@ namespace web.test.tests.Tests
             term_field.SendKeys(term.ToString());
 
             String act_end_date = driver.FindElement(By.Id("endDate")).GetAttribute("value");
-
-            Console.WriteLine($"ER: {exp_end_date}; AR: {act_end_date}");
 
             //Assert
             Assert.AreEqual(true, new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.TextToBePresentInElementValue(By.Id("endDate"), exp_end_date)));
