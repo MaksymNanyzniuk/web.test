@@ -29,7 +29,7 @@ namespace Callculator.Controllers
         [HttpGet]
         public ActionResult Number(float number)
         {
-            var result = string.Format(CultureInfo.InvariantCulture, "{0:N}", number);
+            var result = Math.Round(number, 2).ToString("N", CultureInfo.InvariantCulture);
             var format = System.IO.File.Exists(settings)
                 ? System.IO.File.ReadAllText(settings).Split(';')[1]
                 : "123,456,789.00";
