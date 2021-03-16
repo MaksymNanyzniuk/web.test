@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Threading;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 using web.test.tests.Pages;
 
 namespace web.test.tests.Tests
@@ -27,7 +24,15 @@ namespace web.test.tests.Tests
             driver.Url = "http://localhost:64177/Login";
 
             new LoginPage(driver).Login("test", "newyork1");
+            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
 
+            new DepositPage(driver).OpenSettingsPage();
+
+            SettingsPage settingsPage = new SettingsPage(driver);
+            settingsPage.SelectDateFormat.SelectByText("dd/MM/yyyy");
+            settingsPage.SelectNumberFormat.SelectByText("123,456,789.00");
+            settingsPage.SelectDefaultCurrency.SelectByText("$ - US dollar");
+            settingsPage.Save();
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
         }
 
@@ -38,24 +43,18 @@ namespace web.test.tests.Tests
         }
 
 
-        [Test]
-        public void Income_And_Interest()
+        [TestCase(360)]
+        [TestCase(365)]
+        public void Income_And_Interest(int fin_year)
         {
             //Arrange
             Decimal[] amount_array = { 0m, 1m, 100.54m, 100000m, 100001m };
             Decimal[] rate_array = { 0m, 1m, 13.5m, 100m, 101m };
-            Decimal[] term_array = { 0m, 1m, 7.7m, 0m, 0m };
-
-            var year_map = new Dictionary<String, int>();
-            year_map.Add(fin_year_360, 360);
-            year_map.Add(fin_year_365, 365);
+            Decimal[] term_array = { 0m, 1m, 7.7m, 360m, 361m };
 
             //Act
-          
             int n = 0;
-
-            String financial_year_Id;
-            int year_length;
+            int year_length = 360;
 
             Decimal exp_interest;
             Decimal exp_income;
@@ -63,7 +62,7 @@ namespace web.test.tests.Tests
             Decimal act_interest;
             Decimal act_income;
 
-            int array_size = amount_array.Length * rate_array.Length * term_array.Length * year_map.Count;
+            int array_size = amount_array.Length * rate_array.Length * term_array.Length;
 
             Decimal[] exp_interest_array = new Decimal[array_size];
             Decimal[] exp_income_array = new Decimal[array_size];
@@ -71,63 +70,69 @@ namespace web.test.tests.Tests
             Decimal[] act_interest_array = new Decimal[array_size];
             Decimal[] act_income_array = new Decimal[array_size];
 
-            foreach (var pair in year_map)
+            //Act
+            DepositPage depositPage = new DepositPage(driver);
+
+            if (fin_year == 360)
             {
-                financial_year_Id = pair.Key;
-                year_length = pair.Value;
+                depositPage.FinYear360.Click();
+            }
+            else if (fin_year == 365)
+            {
+                depositPage.FinYear365.Click();
+                year_length = 365;
+                term_array[term_array.Length - 2] = 365;
+                term_array[term_array.Length - 1] = 366;
+            }
+            else
+            {
+                Assert.AreEqual("", "Inproper fin_year value in input data");
+            }
 
-                term_array[term_array.Length - 2] = year_length;
-                term_array[term_array.Length - 1] = year_length + 1;
-
-                //Act
-                driver.FindElement(By.XPath($"//*[text()='{financial_year_Id}']/input")).Click();
-
-                for (int i = 0; i < amount_array.Length; i++)
+            for (int i = 0; i < amount_array.Length; i++)
+            {
+                depositPage.AmountField.Clear();
+                depositPage.AmountField.SendKeys(amount_array[i].ToString(CultureInfo.InvariantCulture));
+                for (int j = 0; j < rate_array.Length; j++)
                 {
-                    driver.FindElement(By.Id("amount")).Clear();
-                    driver.FindElement(By.Id("amount")).SendKeys(amount_array[i].ToString(CultureInfo.InvariantCulture));
-                    for (int j = 0; j < rate_array.Length; j++)
+                    depositPage.RateField.Clear();
+                    depositPage.RateField.SendKeys(rate_array[j].ToString(CultureInfo.InvariantCulture));
+                    for (int k = 0; k < term_array.Length; k++)
                     {
-                        driver.FindElement(By.Id("percent")).Clear();
-                        driver.FindElement(By.Id("percent")).SendKeys(rate_array[j].ToString(CultureInfo.InvariantCulture));
-                        for (int k = 0; k < term_array.Length; k++)
+                        depositPage.SetTerm(term_array[k]);
+
+                        if (amount_array[i] > 100000)
                         {
-                            driver.FindElement(By.Id("term")).Clear();
-                            driver.FindElement(By.Id("term")).SendKeys(term_array[k].ToString(CultureInfo.InvariantCulture));
+                            exp_interest = 0;
+                            exp_income = 0;
+                        }
+                        else if (rate_array[j] > 100 | term_array[k] > year_length)
+                        {
+                            exp_interest = 0;
+                            exp_income = amount_array[i] + exp_interest;
+                        }
+                        else
+                        {
+                            exp_interest = Math.Round(amount_array[i] * rate_array[j] * term_array[k] / 100 / year_length, 2);
+                            exp_income = amount_array[i] + exp_interest;
+                        }
 
-                            if (amount_array[i] > 100000)
-                            {
-                                exp_interest = 0;
-                                exp_income = 0;
-                            }
-                            else if (rate_array[j] > 100 | term_array[k] > year_length)
-                            {
-                                exp_interest = 0;
-                                exp_income = amount_array[i] + exp_interest;
-                            }
-                            else
-                            {
-                                exp_interest = Math.Round(amount_array[i] * rate_array[j] * term_array[k] / 100 / year_length, 2);
-                                exp_income = amount_array[i] + exp_interest;
-                            }
+                        exp_interest_array[n] = exp_interest;
+                        exp_income_array[n] = exp_income;
 
-                            exp_interest_array[n] = exp_interest;
-                            exp_income_array[n] = exp_income;
+                        act_interest = depositPage.InterestDec;
+                        act_income = depositPage.IncomeDec;
 
-                            act_interest = Convert.ToDecimal(driver.FindElement(By.Id("interest")).GetAttribute("value"), CultureInfo.InvariantCulture);
-                            act_income = Convert.ToDecimal(driver.FindElement(By.Id("income")).GetAttribute("value"), CultureInfo.InvariantCulture);
+                        act_interest_array[n] = act_interest;
+                        act_income_array[n] = act_income;
 
-                            act_interest_array[n] = act_interest;
-                            act_income_array[n] = act_income;
-
+                        if (exp_interest != act_interest || exp_income != act_income)
+                        {
                             Console.WriteLine("n=" + n + ". amount=" + amount_array[i] + "; rate=" + rate_array[j] + "; term=" + term_array[k] + ";");
                             Console.WriteLine("exp_interest=" + exp_interest + "; act_interest=" + act_interest + "; exp_income= " + exp_income + "; act_income= " + act_income);
-
-                            n++;
-
-                            //Assert
-                            Assert.AreEqual("true", driver.FindElement(By.XPath($"//*[text()='{financial_year_Id}']/input")).GetAttribute("checked"));
                         }
+
+                        n++;
                     }
                 }
             }
@@ -163,20 +168,20 @@ namespace web.test.tests.Tests
             settingsPage.CancelBtn.Click();
 
             if (fin_year == 360)
-            { 
-                depositPage.FinYear360.Click(); 
+            {
+                depositPage.FinYear360.Click();
             }
             else if (fin_year == 365)
             {
                 depositPage.FinYear365.Click();
             }
-            else 
+            else
             {
                 Assert.AreEqual("", "Inproper fin_year value in input data");
             }
 
             depositPage.SelectStartYear.SelectByText(start_year.ToString());
-            depositPage.SelectStartMonth.SelectByIndex(start_month-1);
+            depositPage.SelectStartMonth.SelectByIndex(start_month - 1);
             depositPage.SelectStartDay.SelectByText(start_day.ToString());
             depositPage.SetTerm(term);
 
@@ -214,7 +219,7 @@ namespace web.test.tests.Tests
         {
             //Act
             DepositPage depositPage = new DepositPage(driver);
-            
+
             //Assert
             Assert.AreEqual("true", depositPage.FinYear365.GetAttribute("checked"));
             Assert.AreEqual(null, depositPage.FinYear360.GetAttribute("checked"));
@@ -262,7 +267,7 @@ namespace web.test.tests.Tests
             //Arrange
             int[] exp_days_number = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }; ;
             if (year % 4 == 0) exp_days_number[1] = 29;
-            
+
             //Act
             DepositPage depositPage = new DepositPage(driver);
             depositPage.SelectStartYear.SelectByText(year.ToString());

@@ -34,7 +34,8 @@ namespace web.test.tests.Pages
         public IWebElement FinYear365 => driver.FindElement(By.XPath($"//*[text()='365 days']/input"));
         public String InterestStr => driver.FindElement(By.Id("interest")).GetAttribute("value");
         public Decimal InterestDec => Convert.ToDecimal(driver.FindElement(By.Id("interest")).GetAttribute("value"), CultureInfo.InvariantCulture);
-        public Decimal Income => Convert.ToDecimal(driver.FindElement(By.Id("income")).GetAttribute("value"), CultureInfo.InvariantCulture);
+        public String IncomeStr => driver.FindElement(By.Id("income")).GetAttribute("value");
+        public Decimal IncomeDec => Convert.ToDecimal(driver.FindElement(By.Id("income")).GetAttribute("value"), CultureInfo.InvariantCulture);
         public String EndDate => driver.FindElement(By.Id("endDate")).GetAttribute("value");
         public IWebElement Settings => driver.FindElement(By.XPath("//div[text()='Settings']"));
         public String CurrencySign => driver.FindElement(By.Id("currency")).Text;
@@ -45,7 +46,7 @@ namespace web.test.tests.Pages
             new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.XPath("//div[text()='Logout']")));
         }
 
-        public void SetTerm(int term)
+        public void SetTerm(Decimal term)
         {
             this.TermField.Clear();
             foreach (char ch in term.ToString().ToCharArray())
