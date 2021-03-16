@@ -12,8 +12,6 @@ namespace web.test.tests.Tests
     class DepositePageTests
     {
         private IWebDriver driver;
-        const String fin_year_360 = "360 days";
-        const String fin_year_365 = "365 days";
 
         [SetUp]
         public void Setup()
@@ -23,17 +21,7 @@ namespace web.test.tests.Tests
             driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
             driver.Url = "http://localhost:64177/Login";
 
-            new LoginPage(driver).Login("test", "newyork1");
-            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
-
-            new DepositPage(driver).OpenSettingsPage();
-
-            SettingsPage settingsPage = new SettingsPage(driver);
-            settingsPage.SelectDateFormat.SelectByText("dd/MM/yyyy");
-            settingsPage.SelectNumberFormat.SelectByText("123,456,789.00");
-            settingsPage.SelectDefaultCurrency.SelectByText("$ - US dollar");
-            settingsPage.Save();
-            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("amount")));
+            new LoginPage(driver).Login().OpenSettingsPage().ResetToDefault();
         }
 
         [TearDown]
@@ -72,31 +60,21 @@ namespace web.test.tests.Tests
 
             //Act
             DepositPage depositPage = new DepositPage(driver);
+            depositPage.SelectFinYear(fin_year);
 
-            if (fin_year == 360)
+            if (fin_year == 365)
             {
-                depositPage.FinYear360.Click();
-            }
-            else if (fin_year == 365)
-            {
-                depositPage.FinYear365.Click();
                 year_length = 365;
                 term_array[term_array.Length - 2] = 365;
                 term_array[term_array.Length - 1] = 366;
             }
-            else
-            {
-                Assert.AreEqual("", "Inproper fin_year value in input data");
-            }
 
             for (int i = 0; i < amount_array.Length; i++)
             {
-                depositPage.AmountField.Clear();
-                depositPage.AmountField.SendKeys(amount_array[i].ToString(CultureInfo.InvariantCulture));
+                depositPage.SetAmount(amount_array[i]);
                 for (int j = 0; j < rate_array.Length; j++)
                 {
-                    depositPage.RateField.Clear();
-                    depositPage.RateField.SendKeys(rate_array[j].ToString(CultureInfo.InvariantCulture));
+                    depositPage.SetRate(rate_array[j]);
                     for (int k = 0; k < term_array.Length; k++)
                     {
                         depositPage.SetTerm(term_array[k]);
@@ -128,8 +106,8 @@ namespace web.test.tests.Tests
 
                         if (exp_interest != act_interest || exp_income != act_income)
                         {
-                            Console.WriteLine("n=" + n + ". amount=" + amount_array[i] + "; rate=" + rate_array[j] + "; term=" + term_array[k] + ";");
-                            Console.WriteLine("exp_interest=" + exp_interest + "; act_interest=" + act_interest + "; exp_income= " + exp_income + "; act_income= " + act_income);
+                            Console.WriteLine($"n={ n }; amount={amount_array[i]}; rate={rate_array[j]}; term={term_array[k]};");
+                            Console.WriteLine($"exp_interest={exp_interest}; act_interest={act_interest}; exp_income={exp_income}; act_income={act_income}");
                         }
 
                         n++;
@@ -155,38 +133,16 @@ namespace web.test.tests.Tests
         public void End_Date(int term, int fin_year)
         {
             //Arrange
-            int start_day = 15;
-            int start_month = 7;
-            int start_year = 2019;
+            DateTime startDate = new DateTime(2019, 7, 15);
 
             //Act
             DepositPage depositPage = new DepositPage(driver);
-            depositPage.OpenSettingsPage();
-
-            SettingsPage settingsPage = new SettingsPage(driver);
-            String exp_end_date = new DateTime(start_year, start_month, start_day).AddDays(term).ToString(settingsPage.SelectedDateFormat, CultureInfo.InvariantCulture);
-            settingsPage.CancelBtn.Click();
-
-            if (fin_year == 360)
-            {
-                depositPage.FinYear360.Click();
-            }
-            else if (fin_year == 365)
-            {
-                depositPage.FinYear365.Click();
-            }
-            else
-            {
-                Assert.AreEqual("", "Inproper fin_year value in input data");
-            }
-
-            depositPage.SelectStartYear.SelectByText(start_year.ToString());
-            depositPage.SelectStartMonth.SelectByIndex(start_month - 1);
-            depositPage.SelectStartDay.SelectByText(start_day.ToString());
+            depositPage.StartDate = startDate;
+            depositPage.SelectFinYear(fin_year);
             depositPage.SetTerm(term);
 
             //Assert
-            Assert.AreEqual(exp_end_date, depositPage.EndDate);
+            Assert.AreEqual(startDate.AddDays(term).ToString(SettingsPage.DefaultDateFormat, CultureInfo.InvariantCulture), depositPage.EndDate);
         }
 
 
@@ -222,7 +178,7 @@ namespace web.test.tests.Tests
 
             //Assert
             Assert.AreEqual("true", depositPage.FinYear365.GetAttribute("checked"));
-            Assert.AreEqual(null, depositPage.FinYear360.GetAttribute("checked"));
+            Assert.IsNull(depositPage.FinYear360.GetAttribute("checked"));
         }
 
 
@@ -235,7 +191,7 @@ namespace web.test.tests.Tests
             depositPage.FinYear360.Click();
 
             //Assert
-            Assert.AreEqual(null, depositPage.FinYear365.GetAttribute("checked"));
+            Assert.IsNull(depositPage.FinYear365.GetAttribute("checked"));
             Assert.AreEqual("true", depositPage.FinYear360.GetAttribute("checked"));
         }
 

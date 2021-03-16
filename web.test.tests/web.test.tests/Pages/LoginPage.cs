@@ -6,33 +6,33 @@ namespace web.test.tests.Pages
 {
     public class LoginPage
     {
-        private IWebDriver _driver;
+        private IWebDriver driver;
 
         public LoginPage(IWebDriver driver)
         {
-            _driver = driver;
+            this.driver = driver;
         }
 
         public IWebElement LoginField
         {
             get
             {
-                return _driver.FindElement(By.Id("login"));
+                return driver.FindElement(By.Id("login"));
             }
         }
 
-        public IWebElement PasswordField => _driver.FindElement(By.Id("password"));
-        public IWebElement LoginButton => _driver.FindElement(By.Id("loginBtn"));
+        public IWebElement PasswordField => driver.FindElement(By.Id("password"));
+        public IWebElement LoginButton => driver.FindElement(By.Id("loginBtn"));
         public IWebElement RemindButton
         {
             get
             {
                 try
                 {
-                    new WebDriverWait(_driver, TimeSpan.FromMilliseconds(2000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("remindBtn")));
+                    new WebDriverWait(driver, TimeSpan.FromMilliseconds(2000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id("remindBtn")));
                 }
                 catch { }
-                return _driver.FindElement(By.Id("remindBtn"));
+                return driver.FindElement(By.Id("remindBtn"));
             }
         }
 
@@ -42,6 +42,14 @@ namespace web.test.tests.Pages
             PasswordField.SendKeys(password);
             LoginButton.Click();
         }
-        public string ErrorMessage => _driver.FindElement(By.Id("errorMessage")).Text;
+
+        internal DepositPage Login()
+        {
+            Login("test", "newyork1");
+            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id(DepositPage.amount_field_id)));
+            return new DepositPage(driver);
+        }
+
+        public string ErrorMessage => driver.FindElement(By.Id("errorMessage")).Text;
     }
 }

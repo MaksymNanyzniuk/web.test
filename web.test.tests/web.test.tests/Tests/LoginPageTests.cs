@@ -54,16 +54,15 @@ namespace web.test.tests.Tests
         [Test]
         public void Correct_Login_and_Correct_Password()
         {
-            LoginPage loginPage = new LoginPage(driver);
-            loginPage.Login("test", "newyork1");
+            new LoginPage(driver).Login("test", "newyork1");
+            new WebDriverWait(driver, TimeSpan.FromMilliseconds(10000)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.Id(DepositPage.amount_field_id)));
             Assert.IsTrue(new DepositPage(driver).AmountField.Displayed);
         }
 
         [Test]
         public void Button_Remind_Is_Present()
         {
-            LoginPage loginPage = new LoginPage(driver);
-            Assert.IsTrue(loginPage.RemindButton.Displayed);
+            Assert.IsTrue(new LoginPage(driver).RemindButton.Displayed);
         }
 
         [Test]
