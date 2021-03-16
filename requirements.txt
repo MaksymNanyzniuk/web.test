@@ -10,7 +10,7 @@ First screen - Sign In. Add next fields&buttons:
  * Login filed, labeled 'User'
  * Password filed, labeled 'Password'
  * Login button
- * Remind password button.
+ * Remind password button (use test@test.com email)
 You can use your test account:
  * user: test
  * pass: newyork1

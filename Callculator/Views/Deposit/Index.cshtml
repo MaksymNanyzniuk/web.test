@@ -13,30 +13,30 @@
 
 			<table>
 				<tr>
-					<td>Deposit Ammount *</td>
-					<td><input id="amount" oninput="VerifyNumber('amount', 0, 100000); Calculate()"></td>
-					<td>$</td>
+					<td>Deposit Amount: *</td>
+					<td><input id="amount" oninput="VerifyNumber('amount', 0, 100000); Calculate()"></input></td>
+					<td id="currency">$</td>
 				</tr>
 				<tr>
-					<td>Rate of intereset: *</td>
-					<td><input id="percent" oninput="VerifyNumber('percent', 0, 100); Calculate()"></td>
+					<td>Rate of Interest: *</td>
+					<td><input id="percent" oninput="VerifyNumber('percent', 0, 100); Calculate()"></input></td>
 					<td>%</td>
 				</tr>
 				<tr>
 					<td>Investment Term: *</td>
-					<td colspan="2"><input id="term" oninput="VerifyNumber('term', 0, 365); Calculate()" /></td>
+					<td colspan="2"><input id="term" oninput="VerifyTerm('term', 0); Calculate()" /></td>
 				</tr>
 				<tr>
-					<td>Start date: *</td>
+					<td>Start Date:</td>
 					<td colspan="2">
 						<select id="day" onchange="CalculateDate()"></select>
 						<select id="month" onchange="ResetMonth(); CalculateDate();">
 							<option>January</option>
 							<option>February</option>
 							<option>March</option>
-							<option>May</option>
 							<option>April</option>
-							<option>Jun</option>
+							<option>May</option>
+							<option>June</option>
 							<option>July</option>
 							<option>August</option>
 							<option>September</option>
@@ -44,24 +44,24 @@
 							<option>November</option>
 							<option>December</option>
 						</select>
-						<select id="year" onchange="CalculateDate()"></select>
+						<select id="year" onchange="ResetMonth(); CalculateDate();"></select>
 					</td>
 				</tr>
-				<tr>
-					<td>Financial year: *</td>
-					<td><input type="radio" id="d365" onchange="Calculate('d360')">365 days</td>
-					<td><input type="radio" id="d360" onchange="Calculate('d365')">360 days</td>
+				<tr id="finYear">
+					<td>Financial Year:</td>
+					<td><input type="radio" onchange="Calculate(365)" checked="checked">365 days</input></td>
+					<td><input type="radio" onchange="Calculate(360)">360 days</input></td>
 				</tr>
+                <tr>
+                    <th aalign="left">Interest Earned:</th>
+                    <th><input id="interest" readonly /></th>
+                </tr>
 				<tr>
-					<th align="left">Income: *</th>
+					<th align="left">Income:</th>
 					<th><input id="income" readonly /></th>
 				</tr>
 				<tr>
-					<th aalign="left">interest earned: *</th>
-					<th><input id="interest" readonly /></th>
-				</tr>
-				<tr>
-					<th align="left">end date: *</th>
+					<th align="left">End Date:</th>
 					<th><input id="endDate" readonly /></th>
 				</tr>
 				<tr><td colspan="3">* - mandatory fields</td></tr>
@@ -73,33 +73,62 @@
 
 <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 <script type="text/javascript">
-	Date.prototype.yyyymmdd = function () {
-		var mm = this.getMonth() + 1;
-		var dd = this.getDate() + 1;
+    VerifyNumber = function (id, min, max) {
+        var value = Number(document.getElementById(id).value);
 
-		return [(dd > 9 ? '' : '0') + dd, (mm > 9 ? '' : '0') + mm, this.getFullYear()].join('/');
-	};
+        if (isNaN(value) || value < min || value > max) {
+            document.getElementById(id).value = "0";
+        }
+    }
 
-	VerifyNumber = function (id, min, max) {
-		var value = Number(document.getElementById(id).value);
+    VerifyTerm = function (id, min) {
+        var max = document.querySelector('#finYear input').checked ? 365 : 360;
+        var value = Number(document.getElementById(id).value);
 
-		if (isNaN(value) || value < min || value > max) {
-			document.getElementById(id).value = "0";
-		}
-	}
+        if (isNaN(value) || value < min || value > max) {
+            document.getElementById(id).value = "0";
+        }
+    }
+
+    Date.prototype.yyyymmdd = function () {
+        var mm = this.getMonth() + 1;
+        var dd = this.getDate();
+        return [(dd > 9 ? '' : '0') + dd, (mm > 9 ? '' : '0') + mm, this.getFullYear()].join('/');
+    };
 
 	CalculateDate = function () {
-		var day = document.getElementById('day').selectedIndex;
+		var day = document.getElementById('day').selectedIndex + 1;
 		var month = document.getElementById('month').selectedIndex;
 		var year = document.getElementById('year').value;
 		var days = Number(document.getElementById('term').value);
 
-		document.getElementById('endDate').value = new Date(year, month, day + days).yyyymmdd();
-	}
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("Date", "Settings")',
+            data : {'date' : new Date(year, month, day + days).yyyymmdd()},
+            dataType: 'json',
+            success: function (response) {
+                document.getElementById('endDate').value = response;
+            }
+        });
+    }
+
+    SetNumber = function (id, number) {
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("Number", "Settings")',
+            data : {'number' : number},
+            dataType: 'json',
+            success: function (response) {
+                document.getElementById(id).value = response;
+            }
+        });
+    }
 
 	ResetMonth = function () {
 		var day = ++document.getElementById('day').selectedIndex;
-		var month = document.getElementById('month').selectedIndex;
+        var month = document.getElementById('month').selectedIndex;
+        var leapYear = document.getElementById('year').value % 4 === 0;
 
 		switch (month) {
 			case 0:
@@ -120,7 +149,7 @@
 				SetDay(day < 31 ? day : 30);
 				break;
 			default:
-				AddOptions('day', 1, 28);
+				AddOptions('day', 1, leapYear ? 29 : 28);
 				SetDay(day < 29 ? day : 28);
 				break;
 		}
@@ -158,8 +187,8 @@
     Save = function() {
 		var amount = Number(document.getElementById('amount').value);
 		var days = Number(document.getElementById('term').value);
-		var percent = Number(document.getElementById('percent').value);
-		var year = (document.getElementById('d360').checked || false) ? 360 : 365;
+        var percent = Number(document.getElementById('percent').value);
+        var year = document.querySelector('#finYear input').checked ? 365 : 360;
 		var interest = document.getElementById('interest').value;
 		var income = document.getElementById('income').value;
         var endDate = document.getElementById('endDate').value;
@@ -181,18 +210,24 @@
 		});
     }
 
-	Calculate = function (id) {
-		if (id !== undefined) { document.getElementById(id).checked = false; }
-
+    Calculate = function (year) {
+        year = year == undefined
+            ? (document.querySelector('#finYear input').checked ? 365 : 360)
+            : year;
 		var amount = Number(document.getElementById('amount').value);
 		var days = Number(document.getElementById('term').value);
 		var percent = Number(document.getElementById('percent').value);
-		var year = (document.getElementById('d360').checked || false) ? 360 : 365;
 		var interest = amount * percent * days / (year * 100);
 		var income = amount + interest;
 
-		document.getElementById('interest').value = interest.toFixed(2);
-		document.getElementById('income').value = income.toFixed(2);
+        SetNumber('interest', interest);
+        SetNumber('income', income);
+
+        if (year == 360) {
+            document.querySelector('#finYear td:nth-child(2) input').checked = false;
+        } else {
+            document.querySelector('#finYear td:nth-child(3) input').checked = false;
+        }
 
         CalculateDate();
 
@@ -201,6 +236,18 @@
         }
 	}
 
+    SetCurrency = function() {
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("Currency", "Settings")',
+            dataType: 'json',
+            success: function (response) {
+                document.getElementById('currency').textContent = response;
+            }
+        });
+    }
+
+    SetCurrency();
 	SetCurrentDate();
 	Calculate();
 </script>

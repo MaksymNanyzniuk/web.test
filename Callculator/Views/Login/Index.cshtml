@@ -12,7 +12,7 @@
 				<tr>
 					<th class="user">Login:</th>
 					<td>
-						<input id="login"/>
+						<input id="login" />
 					</td>
 				</tr>
 				<tr>
@@ -24,13 +24,16 @@
 					</td>
 				</tr>
 				<tr>
-					<td colspan="2" align="right">
-						<button onclick="Login()" title="Login" id="login">Login</button>
-						<button onclick="RemindPassword()" title="remind" id="remind">Remind pasword</button>
+					<td colspan="2" align="right" style="width: 100px" id="buttons">
 					</td>
 				</tr>
 				<tr>
 					<th style="color: red" id="errorMessage" colspan="3"></th>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<iframe id="remindPasswordView" hidden src="~/Static/RemindPassword.html" style="height:130px"></iframe>
+					</td>
 				</tr>
 			</table>
 		</div>
@@ -39,6 +42,10 @@
 </html>
 
 <script type="text/javascript">
+	RemindPassword = function () {
+		document.getElementById('remindPasswordView').hidden = false;
+    }
+
     Login = function () {
         var correctPass = 'newyork1';
         var correctUser = 'test';
@@ -55,23 +62,29 @@
 			return;
 		}
 
-		if (login === correctUser && password !== correctPass) {
-			ShowError("Incorrect password!");
-			return;
-		}
-
-		if (login !== correctUser && password === correctPass) {
-			ShowError("Incorrect user name!");
-			return;
-		}
-
-		if (login !== correctUser && password !== correctPass) {
-			ShowError("'" + login + "' user doesn't exist!");
+		if (login !== correctUser || password !== correctPass) {
+			ShowError("Incorrect user name or password!");
 			return;
 		}
 	}
 
 	ShowError = function(error) {
 		document.getElementById('errorMessage').textContent = error;
+    }
+
+	function sleep (time) {
+		return new Promise((resolve) => setTimeout(resolve, time));
 	}
+
+    window.onload = function () {
+        sleep(500).then(() => {
+            document.getElementById('buttons').insertAdjacentHTML('afterBegin',
+                '<button onclick="Login()" title="Login" id="loginBtn">Login</button>');
+
+            document.getElementById('buttons').insertAdjacentHTML('beforeEnd',
+	            '<button onclick="RemindPassword()" title="remind" id="remindBtn" style="display:none">Remind password</button>');
+
+            sleep(500).then(() => document.getElementById('remindBtn').style.display = "initial");
+		});
+    }
 </script>
